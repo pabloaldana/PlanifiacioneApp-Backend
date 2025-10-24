@@ -14,9 +14,7 @@ export class FilesController {
   }))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     const uploaded = await this.filesService.uploadFile(file);
-    //! en uploaded viene  el link de descarga que tengo que guardar en la tabla planificaciones  y el public_id
-    // console.log(uploaded) 
-    return uploaded; // devuelve { url, public_id } 
 
+    return uploaded; // devuelve { url, public_id } 
   }
 }

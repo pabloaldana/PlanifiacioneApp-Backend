@@ -1,34 +1,11 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { v2 as Cloudinary } from 'cloudinary';
-import { promises as fs } from 'fs';
 
 @Injectable()
 export class FilesService {
   constructor(
     @Inject('CLOUDINARY') private readonly cloudinary: typeof Cloudinary,
   ) {}
-//!necesario guardar localmente
-//   async uploadFile(file: Express.Multer.File) {
-//     try {
-//       // Subida a Cloudinary
-//       const result = await this.cloudinary.uploader.upload(file.path, {
-//         resource_type: 'auto', // acepta cualquier tipo de archivo
-//         folder: 'PlanificacionesDB',     // opcional: carpeta en Cloudinary
-//         use_filename: true,    // usar el nombre original del archivo
-//         unique_filename: false // no generar nombre único automáticamente
-//       });
-
-//       // Opcional: eliminar archivo local después de subirlo
-//       await fs.unlink(file.path);
-
-//       return {
-//         url: result.secure_url,
-//         public_id: result.public_id,
-//       };
-//     } catch (error) {
-//       throw new Error(`Error al subir archivo: ${error.message}`);
-//     }
-//   }
 
 async uploadFile(file: Express.Multer.File) {
   try {
