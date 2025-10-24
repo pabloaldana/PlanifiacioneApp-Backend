@@ -1,5 +1,3 @@
-import { StringifyOptions } from "querystring";
-import { ColdObservable } from "rxjs/internal/testing/ColdObservable";
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('planificaciones')
