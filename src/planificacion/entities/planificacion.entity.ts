@@ -1,3 +1,4 @@
+import { StringifyOptions } from "querystring";
 import { ColdObservable } from "rxjs/internal/testing/ColdObservable";
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
@@ -21,6 +22,12 @@ export class Planificacion {
         default:0
     })
     price:number
+
+    @Column({ type: 'varchar', length: 500 })
+    url: string;
+
+    @Column({ type: 'varchar', length: 255 })
+    public_id: string;
 
     @Column('boolean', { default: true })
     is_active: boolean;
