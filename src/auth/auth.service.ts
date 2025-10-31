@@ -15,8 +15,7 @@ export class AuthService {
      private readonly userRepository: Repository<User>
   ){}
 
-  async create(createUserDto: CreateUserDto) {
-    
+  async create(createUserDto: CreateUserDto) {    
     try {
       //destructuro para no guardar la contraseña sin hashear
       const {password,...userData} = createUserDto;
@@ -36,7 +35,6 @@ export class AuthService {
     } catch (error) {
       this.handleDBErrors(error); 
     }
-
   }
 
    private handleDBErrors(error:any):never{
