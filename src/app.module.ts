@@ -16,6 +16,7 @@ import { ComentarioModule } from './comentario/comentario.module';
 import { SuscripcionModule } from './suscripcion/suscripcion.module';
 
 import { FilesModule } from './files/files.module';
+import { AuthModule } from './auth/auth.module';
 
 
 
@@ -35,7 +36,7 @@ import { FilesModule } from './files/files.module';
       synchronize:true,
     }),
 
-    UsuarioModule, RolModule, MateriaModule, GradoModule, PlanificacionModule, OrdenModule, OrdenItemModule, CarritoModule, CarritoItemModule, DescargaModule, ArchivoModule, ComentarioModule, SuscripcionModule, FilesModule, ],
+    UsuarioModule, RolModule, MateriaModule, GradoModule, PlanificacionModule, OrdenModule, OrdenItemModule, CarritoModule, CarritoItemModule, DescargaModule, ArchivoModule, ComentarioModule, SuscripcionModule, FilesModule, AuthModule, ],
   controllers: [],
   providers: [],
 })
