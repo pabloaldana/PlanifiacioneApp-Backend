@@ -9,6 +9,7 @@ export class FilesService {
 
 async uploadFile(file: Express.Multer.File) {
   try {
+    console.log(`Uploading file: ${file.originalname}, size: ${file.size} bytes`);
     const result = await new Promise<any>((resolve, reject) => {
       const uploadStream = this.cloudinary.uploader.upload_stream(
         {

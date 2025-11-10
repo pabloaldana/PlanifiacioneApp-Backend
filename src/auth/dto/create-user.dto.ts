@@ -22,6 +22,6 @@ export class CreateUserDto {
 
     @IsString()
     @MinLength(1)
-    lastName:string
+    lastname:string
         
 }

@@ -6,6 +6,8 @@ import { User } from './entities/auth.entity';
 
 import *as bcrypt from 'bcrypt'
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './interfaces';
 
 
 @Injectable()
@@ -13,7 +15,9 @@ export class AuthService {
 
   constructor(
     @InjectRepository(User)
-     private readonly userRepository: Repository<User>
+     private readonly userRepository: Repository<User>,
+
+     private readonly  jwtService:JwtService
   ){}
 
   async create(createUserDto: CreateUserDto) {    
@@ -31,7 +35,10 @@ export class AuthService {
       //destructuro para no devolver la contraseña hasheada que no la quiero mostrar
       const {password:_,...userInfo} = newUser;
 
-      return  userInfo;
+      return  {
+        ...userInfo,
+        token: this.jwtService.sign({id:newUser.id})
+      }
 
     } catch (error) {
       this.handleDBErrors(error); 
@@ -41,18 +48,26 @@ export class AuthService {
 
   async login(loginUserDto:LoginUserDto){
     const {email,password} = loginUserDto;
-
+    
     const user = await this.userRepository.findOne({
       where:{email},
-      select:{email:true,password:true}
+      select:{email:true,password:true,id:true}
     })
-    
+   
     if (!user) throw new UnauthorizedException('Credentials are not valid (email)');
 
     if(!bcrypt.compareSync(password,user.password)) throw new UnauthorizedException('Credentials are not valid (password)');
 
-    return user
+    return {
+      ...user,
+      token: this.getJwtToken({id:user.id})
+    }
   }
+    private getJwtToken(payload:JwtPayload){
+    const token = this.jwtService.sign( payload );
+    return token;
+  }
+
 
    private handleDBErrors(error:any):never{
     if(error.code === '23505'){
