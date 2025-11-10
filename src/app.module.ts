@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UsuarioModule } from './usuario/usuario.module';
+
 import { RolModule } from './rol/rol.module';
 import { MateriaModule } from './materia/materia.module';
 import { GradoModule } from './grado/grado.module';
@@ -36,7 +36,7 @@ import { AuthModule } from './auth/auth.module';
       synchronize:true,
     }),
 
-    UsuarioModule, RolModule, MateriaModule, GradoModule, PlanificacionModule, OrdenModule, OrdenItemModule, CarritoModule, CarritoItemModule, DescargaModule, ArchivoModule, ComentarioModule, SuscripcionModule, FilesModule, AuthModule, ],
+    RolModule, MateriaModule, GradoModule, PlanificacionModule, OrdenModule, OrdenItemModule, CarritoModule, CarritoItemModule, DescargaModule, ArchivoModule, ComentarioModule, SuscripcionModule, FilesModule, AuthModule, ],
   controllers: [],
   providers: [],
 })
