@@ -1,5 +1,4 @@
 import { Length, Max, Min } from "class-validator";
-import { Usuario } from "src/usuario/entities/usuario.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('comentarios')
@@ -28,8 +27,5 @@ export class Comentario {
     updated_at: Date;
 
 
-    @ManyToOne(() => Usuario, usuario => usuario.comentarios, { eager: true })
-    @JoinColumn({ name: 'id_usuario' })
-    usuario: Usuario;
     
 }
