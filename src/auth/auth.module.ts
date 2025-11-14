@@ -7,6 +7,7 @@ import { User } from './entities/auth.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.stratigie';
+import { Rol } from 'src/rol/entities/rol.entity';
 
 @Module({
   controllers: [AuthController],
@@ -15,7 +16,7 @@ import { JwtStrategy } from './strategies/jwt.stratigie';
     imports:[
     ConfigModule,
 
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User,Rol]),
 
     PassportModule.register({defaultStrategy:'jwt'}),
 
@@ -35,3 +36,5 @@ import { JwtStrategy } from './strategies/jwt.stratigie';
   exports:[PassportModule,JwtModule,TypeOrmModule]
 })
 export class AuthModule {}
+
+//! SOLAMENTE SE EXPORTA LA CLASE CUANDO QUIERO USAR SERVICIOS EN OTRA CLASE

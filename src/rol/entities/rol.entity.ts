@@ -1,5 +1,7 @@
 
+import { User } from "src/auth/entities/auth.entity";
 import { BeforeInsert, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { OneToOne } from "typeorm";
 //aca los roles son de los tipos de usuarios, admin profesor creador de contenido
 //hay q guardar todo en miniscula en la base de datos
 
@@ -18,7 +20,6 @@ export class Rol {
     @UpdateDateColumn()
     updated_at: Date;
 
-    
     @BeforeInsert()
     checkNameInsert(){
         this.name = this.name.toLowerCase().trim();

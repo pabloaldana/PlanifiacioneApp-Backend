@@ -25,13 +25,12 @@ export class UserRoleGuard implements CanActivate {
     if(!user)throw new BadRequestException('User not found');
     
     //! ACA TENDRIA QUE VER COMO HACER PARA MANEJAR EN UNA TABLA ROLES CON VARIOS EN VEZ DE UN ARREGLO DE ROLES EN LA ENTITY DEL USER
-
-    for(const role of user.roles){
+console.log(user)
+    for(const role of user.rol.name){
       if( validRoles.includes(role) ){
         return true;
       }
     }
-
 
     throw new ForbiddenException(`User ${user.fullName} needs a valid role: [${validRoles}]`);
   }
