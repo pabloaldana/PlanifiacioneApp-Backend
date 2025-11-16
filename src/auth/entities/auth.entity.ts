@@ -1,6 +1,7 @@
-import { Rol } from "src/rol/entities/rol.entity";
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { JoinColumn, OneToOne } from "typeorm";
+import { Planificacion } from "src/planificacion/entities/planificacion.entity";
+
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+
 
 @Entity('users')
 export class User {
@@ -28,6 +29,15 @@ export class User {
     })
     isActive:boolean
 
+    @Column('text',{
+        array:true,
+        default:['user']
+    })
+    roles:string[];
+
+    //!si un usuario comun quiere empezar a vender planificaciones tendria que tener un rol mnas para diferenciarlo de la duena para poder cobrarle interes en las ventas
+
+
     @BeforeInsert()
     checkFieldsBeforeInsert(){
         this.email = this.email.toLowerCase().trim();
@@ -39,9 +49,11 @@ export class User {
     }
     //! Campos para relaciones futuras CON PLANIFICACIONES, ROLES
 
-    @OneToOne(()=>Rol,{eager:true})
-    @JoinColumn({name:'id_rol'})
-    rol:Rol
+
+    //relacion user - planificacion 1:n
+    @OneToMany(()=>Planificacion,planificacion => planificacion.user)
+    planificaciones:Planificacion[]
 
     //todo: eager:true hace que cada vez que traiga un user, me traiga el rol asociado
 }
+

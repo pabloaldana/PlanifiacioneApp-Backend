@@ -7,7 +7,7 @@ import { User } from './entities/auth.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.stratigie';
-import { Rol } from 'src/rol/entities/rol.entity';
+
 
 @Module({
   controllers: [AuthController],
@@ -16,7 +16,7 @@ import { Rol } from 'src/rol/entities/rol.entity';
     imports:[
     ConfigModule,
 
-    TypeOrmModule.forFeature([User,Rol]),
+    TypeOrmModule.forFeature([User]),
 
     PassportModule.register({defaultStrategy:'jwt'}),
 
@@ -33,7 +33,7 @@ import { Rol } from 'src/rol/entities/rol.entity';
       }
     })
   ],
-  exports:[PassportModule,JwtModule,TypeOrmModule]
+  exports:[AuthService,PassportModule,JwtModule,TypeOrmModule]
 })
 export class AuthModule {}
 

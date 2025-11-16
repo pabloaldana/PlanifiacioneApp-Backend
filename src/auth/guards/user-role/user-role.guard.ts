@@ -26,7 +26,7 @@ export class UserRoleGuard implements CanActivate {
     
     //! ACA TENDRIA QUE VER COMO HACER PARA MANEJAR EN UNA TABLA ROLES CON VARIOS EN VEZ DE UN ARREGLO DE ROLES EN LA ENTITY DEL USER
 console.log(user)
-    for(const role of user.rol.name){
+    for(const role of user.roles){
       if( validRoles.includes(role) ){
         return true;
       }
