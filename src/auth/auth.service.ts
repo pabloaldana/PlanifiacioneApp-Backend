@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces';
 
 
+
 @Injectable()
 export class AuthService {
 
@@ -17,6 +18,7 @@ export class AuthService {
     @InjectRepository(User)
      private readonly userRepository: Repository<User>,
 
+     
      private readonly  jwtService:JwtService
   ){}
 
@@ -25,9 +27,13 @@ export class AuthService {
       //destructuro para no guardar la contraseña sin hashear
       const {password,...userData} = createUserDto;
       
+      // const defaultRol = await this.rolRepository.findOneBy({ id: 3 });
+      // if (!defaultRol) throw new Error("El rol con id 3 no existe");
+
       const newUser = this.userRepository.create({
         ...userData,
         password: bcrypt.hashSync(password,10),
+        // rol: defaultRol
       });
 
       await  this.userRepository.save(newUser);

@@ -8,6 +8,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.stratigie';
 
+
 @Module({
   controllers: [AuthController],
   
@@ -32,6 +33,8 @@ import { JwtStrategy } from './strategies/jwt.stratigie';
       }
     })
   ],
-  exports:[PassportModule,JwtModule,TypeOrmModule]
+  exports:[AuthService,PassportModule,JwtModule,TypeOrmModule]
 })
 export class AuthModule {}
+
+//! SOLAMENTE SE EXPORTA LA CLASE CUANDO QUIERO USAR SERVICIOS EN OTRA CLASE

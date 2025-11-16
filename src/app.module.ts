@@ -1,24 +1,21 @@
 import { Module } from '@nestjs/common';
 
-import { RolModule } from './rol/rol.module';
+
 import { MateriaModule } from './materia/materia.module';
 import { GradoModule } from './grado/grado.module';
 import { PlanificacionModule } from './planificacion/planificacion.module';
-import { OrdenModule } from './orden/orden.module';
-import { OrdenItemModule } from './orden-item/orden-item.module';
-import { CarritoModule } from './carrito/carrito.module';
-import { CarritoItemModule } from './carrito-item/carrito-item.module';
+
+
 import { DescargaModule } from './descarga/descarga.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ArchivoModule } from './archivo/archivo.module';
+
 import { ComentarioModule } from './comentario/comentario.module';
-import { SuscripcionModule } from './suscripcion/suscripcion.module';
 
 import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
-
-
+import { CompraModule } from './compra/compra.module';
+import { SeedModule } from './seed/seed.module';
 
 
 @Module({
@@ -36,7 +33,7 @@ import { AuthModule } from './auth/auth.module';
       synchronize:true,
     }),
 
-    RolModule, MateriaModule, GradoModule, PlanificacionModule, OrdenModule, OrdenItemModule, CarritoModule, CarritoItemModule, DescargaModule, ArchivoModule, ComentarioModule, SuscripcionModule, FilesModule, AuthModule, ],
+    MateriaModule, GradoModule, PlanificacionModule, DescargaModule, ComentarioModule, FilesModule, AuthModule, CompraModule, SeedModule, ],
   controllers: [],
   providers: [],
 })
