@@ -4,17 +4,13 @@ import { GradoService } from 'src/grado/grado.service';
 import { MateriaService } from 'src/materia/materia.service';
 import { inicialData } from './data/seed-data';
 
-
-
 @Injectable()
 export class SeedService {
-
 
   constructor(
     private readonly materiaService:MateriaService,
     private readonly gradoService:GradoService,
     private readonly userService:AuthService
-
   ) {}
 
   async runSeed() {
@@ -22,14 +18,12 @@ export class SeedService {
     return { message: 'Seed executed' };
   }
 
-
   private async loadSeed(){
 
     const materias = inicialData.MATERIAS_SEED
     const grados = inicialData.GRADOS_SEED
     const users = inicialData.USERS_SEED
     
-
     const insertPromises: Promise<any>[] = [];
     materias.forEach(materia =>{
       insertPromises.push(this.materiaService.create(materia));
@@ -44,6 +38,6 @@ export class SeedService {
     })
 
     await Promise.all(insertPromises);
-
+    return true
   }
 }
