@@ -3,11 +3,20 @@ import { PlanificacionService } from './planificacion.service';
 import { PlanificacionController } from './planificacion.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Planificacion } from './entities/planificacion.entity';
+import { FilesService } from 'src/files/files.service';
+import { FilesModule } from 'src/files/files.module';
+import { AuthModule } from 'src/auth/auth.module';
+import { AuthService } from 'src/auth/auth.service';
+
 
 @Module({
   controllers: [PlanificacionController],
-  providers: [PlanificacionService],
-  imports:[TypeOrmModule.forFeature([Planificacion])]
+  providers: [PlanificacionService,FilesService,AuthService],
+  imports:[
+    TypeOrmModule.forFeature([Planificacion]),
+    FilesModule,
+    AuthModule
+  ]
 
 })
 export class PlanificacionModule {}

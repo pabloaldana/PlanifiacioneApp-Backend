@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString, MinLength } from "class-validator"
+import { IsNumber, IsOptional, IsPositive, IsString, MinLength } from "class-validator"
 
 export class CreatePlanificacionDto {
 
@@ -8,9 +8,18 @@ export class CreatePlanificacionDto {
 
     @IsString()
     @IsOptional()
-    description?: string
+    description: string
 
     @IsNumber()
     @IsOptional()
-    price?:number
+    price:number
+
+    @IsNumber()
+    @IsPositive()
+    materiaId: number;
+
+    @IsNumber()
+    @IsPositive()
+    gradoId: number;
+
 }

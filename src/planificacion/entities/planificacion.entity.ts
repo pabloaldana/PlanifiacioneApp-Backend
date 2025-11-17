@@ -1,3 +1,4 @@
+import { join } from "path";
 import { User } from "src/auth/entities/auth.entity";
 import { Grado } from "src/grado/entities/grado.entity";
 import { Materia } from "src/materia/entities/materia.entity";
@@ -24,9 +25,10 @@ export class Planificacion {
     })
     price:number
 
+    //se obtiene cuando se sube la planificacion a cloudinary
     @Column({ type: 'varchar', length: 500 })
     url: string;
-
+ //se obtiene cuando se sube la planificacion a cloudinary
     @Column({ type: 'varchar', length: 255 })
     public_id: string;
 
@@ -41,17 +43,16 @@ export class Planificacion {
 
     //! FALTA RELACION CON DOCENTE,MATERIA,GRADO, createat y el update
 
+    @ManyToOne(() => Materia, materia => materia.planificaciones, { eager: true })
+    @JoinColumn({ name: 'materiaId' })
+    materia: Materia;
+
     @ManyToOne(() => User, user => user.planificaciones)
     @JoinColumn({ name: 'id_user_creador' })
     user: User;
-    
-    //relacion planificacion - materia 1:1
-    @OneToOne(() => Materia, { eager: true })
-    @JoinColumn({ name: 'id_materia' })
-    materia: Materia;
-
+  
     //relacion planificacion - grado 1:1
-    @OneToOne(() => Grado, { eager: true })
-    @JoinColumn({ name: 'id_grado' })
+    @ManyToOne(()=>Grado, grado=> grado.planifiacion,{eager:true})
+    @JoinColumn({name:'gradoId'})
     grado: Grado;
 }

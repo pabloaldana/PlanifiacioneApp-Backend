@@ -10,7 +10,7 @@ export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('upload')
-  @Auth(ValidRoles.superUser)
+  @Auth(ValidRoles.superAdmin)
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: fileFilter,
     limits: { fileSize: 10 * 1024 * 1024 },

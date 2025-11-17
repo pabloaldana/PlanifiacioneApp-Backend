@@ -6,8 +6,6 @@ import { ValidRoles } from './interfaces';
 import { User } from './entities/auth.entity';
 
 
-
-
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -23,7 +21,7 @@ export class AuthController {
   }
 
   @Get('private')
-  @Auth(ValidRoles.superUser) //si le saqco el valid rol es para cualquier rol
+  @Auth(ValidRoles.superAdmin) //si le saqco el valid rol es para cualquier rol
   privateRoute3( 
     @GetUser() user: User
   ){ 

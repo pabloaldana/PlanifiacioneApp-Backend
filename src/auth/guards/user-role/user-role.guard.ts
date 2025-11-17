@@ -13,7 +13,6 @@ export class UserRoleGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-
     const validRoles:string[] = this.reflector.get(META_ROLES, context.getHandler() );
 
     if(!validRoles) return true;
@@ -25,7 +24,6 @@ export class UserRoleGuard implements CanActivate {
     if(!user)throw new BadRequestException('User not found');
     
     //! ACA TENDRIA QUE VER COMO HACER PARA MANEJAR EN UNA TABLA ROLES CON VARIOS EN VEZ DE UN ARREGLO DE ROLES EN LA ENTITY DEL USER
-console.log(user)
     for(const role of user.roles){
       if( validRoles.includes(role) ){
         return true;

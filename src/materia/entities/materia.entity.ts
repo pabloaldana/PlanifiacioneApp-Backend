@@ -1,4 +1,5 @@
-import { BeforeInsert, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Planificacion } from "src/planificacion/entities/planificacion.entity";
+import { BeforeInsert, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 
 
@@ -17,8 +18,9 @@ export class Materia {
     @CreateDateColumn()
     created_at: Date;
 
-    @UpdateDateColumn()
-    updated_at: Date;
+    // @UpdateDateColumn()
+    // updated_at: Date;
+    // planificaciones: any;
 
 
     @BeforeInsert()
@@ -30,6 +32,9 @@ export class Materia {
     checkDescription(){
         this.description = this.description.toLowerCase()
     }
+
+    @OneToMany(() => Planificacion, planificacion => planificacion.materia)
+    planificaciones: Planificacion[];
     
 
 }

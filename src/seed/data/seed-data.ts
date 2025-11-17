@@ -38,7 +38,7 @@ GRADOS_SEED : [
 USERS_SEED : [
   {
     email: 'superadmin@example.com',
-    password: '123456', // luego confirmame si querés hash con bcrypt
+    password: '123Abc', // luego confirmame si querés hash con bcrypt
     name: 'Super',
     lastname: 'Admin',
     isActive: true,
@@ -46,7 +46,7 @@ USERS_SEED : [
   },
   {
     email: 'admin@example.com',
-    password: '123456',
+    password: '123Abc',
     name: 'Admin',
     lastname: 'System',
     isActive: true,
@@ -54,7 +54,7 @@ USERS_SEED : [
   },
   {
     email: 'user@example.com',
-    password: '123456',
+    password: '123Abc',
     name: 'User',
     lastname: 'Demo',
     isActive: true,
