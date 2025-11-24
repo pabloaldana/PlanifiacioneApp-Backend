@@ -1,4 +1,5 @@
-import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Planificacion } from "src/planificacion/entities/planificacion.entity";
+import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('grados')
 export class Grado {
@@ -18,6 +19,11 @@ export class Grado {
     @UpdateDateColumn()
     updated_at: Date;
 
+    @OneToMany(()=>Planificacion,planificacion=>planificacion.grado)
+    planifiacion:Planificacion[]
+
+
+
     @BeforeInsert()
     @BeforeUpdate()
     normalizeFields() {
@@ -30,4 +36,6 @@ export class Grado {
             .replace(/\s+/g, ' ');
      }
     }
+
+
 }

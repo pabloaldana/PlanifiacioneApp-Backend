@@ -8,6 +8,7 @@ import { AuthModule } from 'src/auth/auth.module';
 @Module({
   controllers: [FilesController],
   providers: [FilesService,CloudinaryProvider],
-  imports: [AuthModule,ConfigModule]
+  imports: [AuthModule,ConfigModule],
+  exports:[FilesService,CloudinaryProvider]
 })
 export class FilesModule {}
