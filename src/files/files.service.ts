@@ -7,77 +7,8 @@ export class FilesService {
     @Inject('CLOUDINARY') private readonly cloudinary: typeof Cloudinary,
   ) {}
 
-// async uploadFile(file: Express.Multer.File) {
-//   try {
-//     console.log(`Uploading file: ${file.originalname}, size: ${file.size} bytes`);
-//     const result = await new Promise<any>((resolve, reject) => {
-//       const uploadStream = this.cloudinary.uploader.upload_stream(
-//         {
-//             folder: 'PlanificacionesDB',
-//             resource_type: 'raw',
-//             use_filename: true,
-//             unique_filename: false,
-//             filename_override: file.originalname,
-//         },
-//         (error, result) => {
-//           if (error) return reject(error);
-//           resolve(result);
-//         },
-//       );
-//       uploadStream.end(file.buffer); // <- enviamos buffer directamente
-//     });
 
-//     return {
-//       url: result.secure_url,
-//       public_id: result.public_id,
-//     };
-//   } catch (error) {
-//     throw new Error(`Error al subir archivo: ${error.message}`);
-//   }
-// }
-
-// async uploadFile(file: Express.Multer.File) {
-//   try {
-//     const result = await new Promise<any>((resolve, reject) => {
-//       const uploadStream = this.cloudinary.uploader.upload_stream(
-//         {
-//           folder: 'PlanificacionesDB',
-//           resource_type: 'raw',
-//           use_filename: true,
-//           unique_filename: false,
-//           filename_override: file.originalname,
-//         },
-//         (error, result) => {
-//           if (error) return reject(error);
-//           resolve(result);
-//         },
-//       );
-//       uploadStream.end(file.buffer);
-//     });
-
-//     // Link que abre en navegador
-//     const viewUrl = result.secure_url;
-
-//     // Link que fuerza descarga
-//     const downloadUrl = this.cloudinary.url(result.public_id, {
-//       resource_type: 'raw',
-//       transformation: [{ flags: 'attachment' }],
-//     });
-//    return {
-//       url:downloadUrl,
-//       public_id: result.public_id,
-//     };
-//     // return {
-//     //   url: viewUrl,
-//     //   downloadUrl,
-//     //   public_id: result.public_id,
-//     // };
-//   } catch (error) {
-//     throw new Error(`Error al subir archivo: ${error.message}`);
-//   }
-// }
-
-async uploadFile(file: Express.Multer.File) {
+  async uploadFile(file: Express.Multer.File) {
   try {
     const result = await new Promise<any>((resolve, reject) => {
       const uploadStream = this.cloudinary.uploader.upload_stream(
@@ -115,8 +46,11 @@ async uploadFile(file: Express.Multer.File) {
   } catch (error) {
     throw new Error(`Error al subir archivo: ${error.message}`);
   }
-}
+  }
 
+  async deleteFile(public_id: string) {
+    return this.cloudinary.uploader.destroy(public_id);
+  }
 }
 
 

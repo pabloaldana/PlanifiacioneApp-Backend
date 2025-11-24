@@ -7,6 +7,7 @@ import { FilesService } from 'src/files/files.service';
 import { FilesModule } from 'src/files/files.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { AuthService } from 'src/auth/auth.service';
+import { PassportModule } from '@nestjs/passport';
 
 
 @Module({
@@ -15,7 +16,8 @@ import { AuthService } from 'src/auth/auth.service';
   imports:[
     TypeOrmModule.forFeature([Planificacion]),
     FilesModule,
-    AuthModule
+    AuthModule,
+    PassportModule
   ]
 
 })

@@ -6,7 +6,6 @@ import { GradoModule } from './grado/grado.module';
 import { PlanificacionModule } from './planificacion/planificacion.module';
 
 
-import { DescargaModule } from './descarga/descarga.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -33,7 +32,7 @@ import { SeedModule } from './seed/seed.module';
       synchronize:true,
     }),
 
-    MateriaModule, GradoModule, PlanificacionModule, DescargaModule, ComentarioModule, FilesModule, AuthModule, CompraModule, SeedModule, ],
+    MateriaModule, GradoModule, PlanificacionModule, ComentarioModule, FilesModule, AuthModule, CompraModule, SeedModule, ],
   controllers: [],
   providers: [],
 })

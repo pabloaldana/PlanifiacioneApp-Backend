@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePlanificacionDto } from './dto/create-planificacion.dto';
 import { UpdatePlanificacionDto } from './dto/update-planificacion.dto';
 import { FilesService } from 'src/files/files.service';
@@ -35,16 +35,55 @@ export class PlanificacionService {
     return newPlanificacion;
   }
 
-  findAll() {
-    return `This action returns all planificacion`;
+  async findAll() {
+    const planificaciones = await this.planifiacionRepository.find()
+    
+    return planificaciones;
   }
 
   findOne(id: number) {
     return `This action returns a #${id} planificacion`;
   }
 
-  update(id: number, updatePlanificacionDto: UpdatePlanificacionDto) {
-    return `This action updates a #${id} planificacion`;
+  async update(id: number, 
+    updatePlanificacionDto: UpdatePlanificacionDto,
+    url?:string,
+    public_id?:string) {
+    //controlar que el titulo no este ya en la tabla porque es unique
+
+    const planificacion = await this.planifiacionRepository.findOne({
+      where:{id},
+      relations:['user'] //esta linea me muestra el usuario que creo la planifiacion
+    })
+
+    if(!planificacion) throw new NotFoundException ('Planificacion no encontrada')
+    
+    if(updatePlanificacionDto.title !== undefined){
+      const existsTitle = await this.planifiacionRepository.findOne({
+        where: {title: updatePlanificacionDto.title}
+      })
+
+      // Validar si existe y NO es la misma planificacion
+      if (existsTitle && existsTitle.id !== id) {
+        throw new BadRequestException('Title is already in use');
+      }
+    }
+
+    //todo: Actualizar solo los campos enviados, evita tener que hacer if, ya filta los campos con undefined
+    const dataToUpdate = Object.fromEntries(
+    Object.entries(updatePlanificacionDto).filter(([_, value]) => value !== undefined)
+    );
+
+    Object.assign(planificacion, dataToUpdate);
+    if(url !== undefined){
+      planificacion.url = url
+    } 
+    if (public_id !== undefined){
+      planificacion.public_id = public_id
+    }
+    await this.planifiacionRepository.save(planificacion)
+
+    return planificacion;
   }
 
   remove(id: number) {

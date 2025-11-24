@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, ParseIntPipe } from '@nestjs/common';
 import { PlanificacionService } from './planificacion.service';
 import { CreatePlanificacionDto } from './dto/create-planificacion.dto';
 import { UpdatePlanificacionDto } from './dto/update-planificacion.dto';
@@ -31,8 +31,8 @@ export class PlanificacionController {
   async create(
     @Body() createPlanificacionDto: CreatePlanificacionDto, 
     @UploadedFile() file: Express.Multer.File,
-    @GetUser() user: User)
-  {
+    @GetUser() user: User
+  ){
     if(!file) throw new BadRequestException('El archivo PDF es obligatorio')
 
     const {url,public_id} = await this.fileService.uploadFile(file)
@@ -40,24 +40,29 @@ export class PlanificacionController {
     return this.planificacionService.create(createPlanificacionDto,url,public_id,user.id);
   }
 
-  
+  @Get()
+  findAll() {
+    return this.planificacionService.findAll();
+  }
+
+  @Patch(':id')
+   @UseInterceptors(FileInterceptor('file', {
+    fileFilter: fileFilter,
+    limits: { fileSize: 10 * 1024 * 1024 },
+  }))
+  async update(
+    @Param('id',ParseIntPipe) id: number, 
+    @Body() updatePlanificacionDto: UpdatePlanificacionDto,
+    @UploadedFile() file: Express.Multer.File,) {
+      if(file){
+        const {url,public_id} = await this.fileService.uploadFile(file)
+        return this.planificacionService.update(id,updatePlanificacionDto,url,public_id);
+      }
+    return this.planificacionService.update(id,updatePlanificacionDto);
+  }
 }
 
-// @Get()
-//   findAll() {
-//     return this.planificacionService.findAll();
-//   }
-
-//   @Get(':id')
-//   findOne(@Param('id') id: string) {
-//     return this.planificacionService.findOne(+id);
-//   }
-
-//   @Patch(':id')
-//   update(@Param('id') id: string, @Body() updatePlanificacionDto: UpdatePlanificacionDto) {
-//     return this.planificacionService.update(+id, updatePlanificacionDto);
-//   }
-
+//aca tengo q verificar que la planifiacion a eliminar no tenga compras asociadas
 //   @Delete(':id')
 //   remove(@Param('id') id: string) {
 //     return this.planificacionService.remove(+id);
