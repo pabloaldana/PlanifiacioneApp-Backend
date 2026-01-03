@@ -15,6 +15,7 @@ import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
 import { CompraModule } from './compra/compra.module';
 import { SeedModule } from './seed/seed.module';
+import { PaymentModule } from './payment/payment.module';
 
 
 @Module({
@@ -32,7 +33,7 @@ import { SeedModule } from './seed/seed.module';
       synchronize:true,
     }),
 
-    MateriaModule, GradoModule, PlanificacionModule, ComentarioModule, FilesModule, AuthModule, CompraModule, SeedModule, ],
+    MateriaModule, GradoModule, PlanificacionModule, ComentarioModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentModule, ],
   controllers: [],
   providers: [],
 })
