@@ -6,7 +6,7 @@ import { MercadoPagoProvider } from './helpers/mp.provider';
 
 @Module({
   controllers: [PaymentController],
-  providers: [PaymentService,MercadoPagoProvider],
-  imports:[ConfigModule]
+  providers: [PaymentService, MercadoPagoProvider],
+  imports: [ConfigModule]
 })
-export class PaymentsModule {}
+export class PaymentsModule { }

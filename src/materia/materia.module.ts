@@ -7,7 +7,7 @@ import { Materia } from './entities/materia.entity';
 @Module({
   controllers: [MateriaController],
   providers: [MateriaService],
-  imports:[TypeOrmModule.forFeature([Materia])],
-  exports:[TypeOrmModule,MateriaService]
+  imports: [TypeOrmModule.forFeature([Materia])],
+  exports: [TypeOrmModule, MateriaService]
 })
-export class MateriaModule {}
+export class MateriaModule { }

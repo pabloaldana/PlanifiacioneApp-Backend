@@ -5,27 +5,27 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGenerat
 export class Comentario {
 
     @PrimaryGeneratedColumn()
-    id: string;
+    id!: string;
 
 
     @Column('text')
     @Length(1, 500)  //limitar texto entre 1 y 500 caracteres
-    text: string;
+    text!: string;
 
     @Column('int')
     @Min(1)
     @Max(5)
-    rating: number;
+    rating!: number;
 
     @Column('boolean', { default: true })
-    is_active: boolean;
+    is_active!: boolean;
 
     @CreateDateColumn()
-    created_at: Date;
+    created_at!: Date;
 
     @UpdateDateColumn()
-    updated_at: Date;
+    updated_at!: Date;
 
 
-    
+
 }

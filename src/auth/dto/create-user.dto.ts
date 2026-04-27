@@ -5,27 +5,27 @@ export class CreateUserDto {
 
     @IsString()
     @IsEmail()
-    email:string
+    email!: string
 
     @IsString()
     @MinLength(6)
     @MaxLength(50)
     @Matches(
-    /(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: 'The password must have a Uppercase, lowercase letter and a number'
+        /(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+        message: 'The password must have a Uppercase, lowercase letter and a number'
     })
-    password:string
+    password!: string
 
     @IsString()
     @MinLength(1)
-    name:string
+    name!: string
 
     @IsString()
     @MinLength(1)
-    lastname:string
-    
+    lastname!: string
+
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    roles?: string[]; 
+    roles?: string[];
 }

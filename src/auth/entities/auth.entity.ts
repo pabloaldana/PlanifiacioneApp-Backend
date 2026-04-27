@@ -8,56 +8,56 @@ import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, Prima
 export class User {
 
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id!: string
 
-    @Column('text',{
-        unique:true
+    @Column('text', {
+        unique: true
     }
     )
-    email:string
+    email!: string
 
     @Column('text')
-    password:string
+    password!: string
 
     @Column('text')
-    name:string
-    
-    @Column('text')
-    lastname:string
+    name!: string
 
-    @Column('bool',{
-       default:true
+    @Column('text')
+    lastname!: string
+
+    @Column('bool', {
+        default: true
     })
-    isActive:boolean
+    isActive!: boolean
 
-    @Column('text',{
-        array:true,
-        default:['user']
+    @Column('text', {
+        array: true,
+        default: ['user']
     })
-    roles:string[];
+    roles!: string[];
 
     //!si un usuario comun quiere empezar a vender planificaciones tendria que tener un rol mnas para diferenciarlo de la duena para poder cobrarle interes en las ventas
 
 
     @BeforeInsert()
-    checkFieldsBeforeInsert(){
+    checkFieldsBeforeInsert() {
         this.email = this.email.toLowerCase().trim();
     }
 
     @BeforeUpdate()
-    checkFieldsBeforeUpdate(){
+    checkFieldsBeforeUpdate() {
         this.checkFieldsBeforeInsert()
     }
     //! Campos para relaciones futuras CON PLANIFICACIONES, ROLES
 
 
     //relacion user - planificacion 1:n
-    @OneToMany(()=>Planificacion,planificacion => planificacion.user)
-    planificaciones:Planificacion[]
+    @OneToMany(() => Planificacion, planificacion => planificacion.user)
+    planificaciones!: Planificacion[]
 
     //relacion con usuario-compra 1:n
     @OneToMany(() => Compra, (compra) => compra.user)
-    compras: Compra[];
+    compras!: Compra[];
 
 
     //todo: eager:true hace que cada vez que traiga un user, me traiga el rol asociado

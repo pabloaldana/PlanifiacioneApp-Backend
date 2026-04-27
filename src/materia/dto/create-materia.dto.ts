@@ -4,9 +4,9 @@ export class CreateMateriaDto {
 
     @IsString()
     @MinLength(1)
-    name:string
+    name!: string
 
     @IsString()
     @MinLength(1)
-    description:string
+    description!: string
 }

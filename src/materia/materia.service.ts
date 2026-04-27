@@ -13,7 +13,7 @@ export class MateriaService {
   constructor(
     @InjectRepository(Materia)
     private readonly materiaRepository: Repository<Materia>
-  ){}
+  ) { }
 
 
   async create(createMateriaDto: CreateMateriaDto) {
@@ -37,34 +37,34 @@ export class MateriaService {
   }
 
   async findOne(id: number) {
-    const materia = await this.materiaRepository.findOneBy({id});
-    if(!materia) throw new NotFoundException(`Materia with id ${id} not found`);
+    const materia = await this.materiaRepository.findOneBy({ id });
+    if (!materia) throw new NotFoundException(`Materia with id ${id} not found`);
     return materia;
   }
 
   async update(id: number, updateMateriaDto: UpdateMateriaDto) {
-    const materia = await this.materiaRepository.findOneBy({id});
-    if(!materia) throw new NotFoundException(`Materia with id ${id} not found`);
-    
-    const updatedMateria = {...materia, ...updateMateriaDto};
+    const materia = await this.materiaRepository.findOneBy({ id });
+    if (!materia) throw new NotFoundException(`Materia with id ${id} not found`);
+
+    const updatedMateria = { ...materia, ...updateMateriaDto };
     return await this.materiaRepository.save(updatedMateria);
   }
 
   async remove(id: number) {
-    const materia = await this.materiaRepository.findOneBy({id});
-    if(!materia) throw new NotFoundException(`Materia with id ${id} not found`);
+    const materia = await this.materiaRepository.findOneBy({ id });
+    if (!materia) throw new NotFoundException(`Materia with id ${id} not found`);
     await this.materiaRepository.remove(materia);
-    return {message: `Materia with id ${id} has been removed`};
+    return { message: `Materia with id ${id} has been removed` };
   }
 
-    private handleDBExceptions(error: any){
-      if (error.code === '23505') {
+  private handleDBExceptions(error: any) {
+    if (error.code === '23505') {
       //!aca me muestra el error en postman
-          throw new InternalServerErrorException('El producto ya existe');
-        }
-        //!aca me muestra el error en la consola
-        this.logger.error(error);
-        throw new InternalServerErrorException('Unexpected error, check server logs');
-      
+      throw new InternalServerErrorException('El producto ya existe');
     }
+    //!aca me muestra el error en la consola
+    this.logger.error(error);
+    throw new InternalServerErrorException('Unexpected error, check server logs');
+
+  }
 }

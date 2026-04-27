@@ -3,7 +3,7 @@ import { PaymentService } from './payment.service';
 
 @Controller('payments')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(private readonly paymentService: PaymentService) { }
 
   // Endpoint para crear preferencia (devolver link de pago)
   @Post('create-preference')

@@ -4,22 +4,22 @@ export class CreatePlanificacionDto {
 
     @IsString()
     @MinLength(1)
-    title:string
+    title!: string
 
     @IsString()
     @IsOptional()
-    description: string
+    description!: string
 
     @IsNumber()
     @IsOptional()
-    price:number
+    price!: number
 
     @IsNumber()
     @IsPositive()
-    materiaId: number;
+    materiaId!: number;
 
     @IsNumber()
     @IsPositive()
-    gradoId: number;
+    gradoId!: number;
 
 }

@@ -8,18 +8,18 @@ export class PaymentService {
   constructor(
     @Inject('MERCADO_PAGO')
     private readonly mpClient: MercadoPagoConfig,
-  ) {}
+  ) { }
 
   /**
    * Crear preferencia de pago (esto se llama desde tu endpoint)
    */
-  async createPreference(data: { title: string; price: number,idPlanificacion:string }) {
+  async createPreference(data: { title: string; price: number, idPlanificacion: string }) {
     const preference = new Preference(this.mpClient);
 
     const preferenceBody = {
       items: [
         {
-          id:data.idPlanificacion,
+          id: data.idPlanificacion,
           title: data.title,
           quantity: 1,
           unit_price: data.price,

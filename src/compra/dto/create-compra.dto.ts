@@ -4,16 +4,16 @@ import { PaymentStatus } from '../entities/compra.entity';
 export class CreateCompraDto {
   @IsUUID()
   @IsNotEmpty()
-  userId: string;
+  userId!: string;
 
   @IsUUID()
   @IsNotEmpty()
-  planificacionId: string;
+  planificacionId!: string;
 
   // Precio congelado en el momento de la compra
   @IsNumber()
   @IsNotEmpty()
-  priceAtPurchase: number;
+  priceAtPurchase!: number;
 
   @IsString()
   @IsOptional()

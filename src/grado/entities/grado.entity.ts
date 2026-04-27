@@ -1,26 +1,32 @@
-import { Planificacion } from "src/planificacion/entities/planificacion.entity";
+// import { Planificacion } from "src/planificacion/entities/planificacion.entity";
 import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Planificacion } from "../../planificacion/entities/planificacion.entity";
 
 @Entity('grados')
 export class Grado {
 
     @PrimaryGeneratedColumn()
-    id:number
+    id!: number
 
     //grado va ser de forma:primero,segundo,tercero,cuarto, quinto,sexto, septimo
     @Column('text',
-        {unique:true}
+        { unique: true }
     )
-    name:string
+    name!: string
+
+    @Column('int',
+        { unique: true }
+    )
+    numero!: number
 
     @CreateDateColumn()
-    created_at: Date;
+    created_at!: Date;
 
     @UpdateDateColumn()
-    updated_at: Date;
+    updated_at!: Date;
 
-    @OneToMany(()=>Planificacion,planificacion=>planificacion.grado)
-    planifiacion:Planificacion[]
+    @OneToMany(() => Planificacion, planificacion => planificacion.grado)
+    planificacion!: Planificacion[]
 
 
 
@@ -28,13 +34,13 @@ export class Grado {
     @BeforeUpdate()
     normalizeFields() {
         if (this.name) {
-        this.name = this.name
-            .toLowerCase()
-            .trim()
-            .normalize("NFD")                   // separa letras de acentos
-            .replace(/[\u0300-\u036f]/g, '')    // elimina los acentos
-            .replace(/\s+/g, ' ');
-     }
+            this.name = this.name
+                .toLowerCase()
+                .trim()
+                .normalize("NFD")                   // separa letras de acentos
+                .replace(/[\u0300-\u036f]/g, '')    // elimina los acentos
+                .replace(/\s+/g, ' ');
+        }
     }
 
 

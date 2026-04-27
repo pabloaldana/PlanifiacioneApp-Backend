@@ -5,7 +5,7 @@ import { UpdateGradoDto } from './dto/update-grado.dto';
 
 @Controller('grados')
 export class GradoController {
-  constructor(private readonly gradoService: GradoService) {}
+  constructor(private readonly gradoService: GradoService) { }
 
   @Post()
   create(@Body() createGradoDto: CreateGradoDto) {
@@ -16,6 +16,12 @@ export class GradoController {
   findAll() {
     return this.gradoService.findAll();
   }
+
+  @Get('cycle')
+  findForCycle() {
+    return this.gradoService.findForCycle();
+  }
+
 
   @Get(':id')
   findOne(@Param('id') id: number) {

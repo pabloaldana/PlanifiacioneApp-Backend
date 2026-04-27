@@ -14,7 +14,7 @@ export class GradoService {
   constructor(
     @InjectRepository(Grado)
     private readonly gradoRepository: Repository<Grado>
-  ){}
+  ) { }
 
 
   async create(createGradoDto: CreateGradoDto) {
@@ -22,8 +22,8 @@ export class GradoService {
       const grado = this.gradoRepository.create(createGradoDto);
       await this.gradoRepository.save(grado);
     } catch (error) {
-       this.handleDBExceptions(error);  
-    }   
+      this.handleDBExceptions(error);
+    }
   }
 
   async findAll() {
@@ -31,8 +31,19 @@ export class GradoService {
     return grados;
   }
 
-   async findOne(id: number) {
-    const grado = await this.gradoRepository.findOneBy({id})
+  async findForCycle() {
+    const grados = await this.gradoRepository.find();
+
+    return {
+      primerCiclo: grados.filter(g => g.numero <= 3),
+      segundoCiclo: grados.filter(g => g.numero >= 4 && g.numero <= 5),
+      tercerCiclo: grados.filter(g => g.numero >= 6),
+    };
+  }
+
+
+  async findOne(id: number) {
+    const grado = await this.gradoRepository.findOneBy({ id })
 
     if (!grado) throw new NotFoundException(`Grado with id ${id} not found`);
 
@@ -42,34 +53,34 @@ export class GradoService {
   async update(id: number, updateGradoDto: UpdateGradoDto) {
 
     const grado = await this.findOne(id);
-    
+
     if (!grado) throw new NotFoundException(`Grado with id ${id} not found`);
-    
+
     if (updateGradoDto.name !== undefined) {
       grado.name = updateGradoDto.name;
     }
-    
+
     await this.gradoRepository.save(grado);
     return grado;
   }
 
   async remove(id: number) {
-    const grado = await this.gradoRepository.findBy({id})
+    const grado = await this.gradoRepository.findBy({ id })
 
-    if (grado.length===0) throw new NotFoundException(`Grado with id ${id} not found`)
+    if (grado.length === 0) throw new NotFoundException(`Grado with id ${id} not found`)
 
     await this.gradoRepository.remove(grado)
-    
+
   }
 
-  private handleDBExceptions(error: any){
+  private handleDBExceptions(error: any) {
     if (error.code === '23505') {
-        //!aca me muestra el error en postman
-        throw new InternalServerErrorException('El grado ya existe');
-      }
-      //!aca me muestra el error en la consola
-      this.logger.error(error);
-      throw new InternalServerErrorException('Unexpected error, check server logs'); 
+      //!aca me muestra el error en postman
+      throw new InternalServerErrorException('El grado ya existe');
+    }
+    //!aca me muestra el error en la consola
+    this.logger.error(error);
+    throw new InternalServerErrorException('Unexpected error, check server logs');
   }
 
 }

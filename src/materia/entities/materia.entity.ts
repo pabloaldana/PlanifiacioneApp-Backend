@@ -7,16 +7,16 @@ import { BeforeInsert, Column, CreateDateColumn, Entity, OneToMany, PrimaryGener
 export class Materia {
 
     @PrimaryGeneratedColumn()
-    id:number
+    id!: number
 
-    @Column('text',{unique:true})
-    name:string
+    @Column('text', { unique: true })
+    name!: string
 
-    @Column('text',{nullable:true})
-    description:string
+    @Column('text', { nullable: true })
+    description!: string
 
     @CreateDateColumn()
-    created_at: Date;
+    created_at!: Date;
 
     // @UpdateDateColumn()
     // updated_at: Date;
@@ -24,17 +24,17 @@ export class Materia {
 
 
     @BeforeInsert()
-    checkName(){
+    checkName() {
         this.name = this.name.toLowerCase()
     }
 
     @BeforeInsert()
-    checkDescription(){
+    checkDescription() {
         this.description = this.description.toLowerCase()
     }
 
     @OneToMany(() => Planificacion, planificacion => planificacion.materia)
-    planificaciones: Planificacion[];
-    
+    planificaciones!: Planificacion[];
+
 
 }
