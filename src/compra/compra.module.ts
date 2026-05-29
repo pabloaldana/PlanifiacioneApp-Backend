@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 @Module({
   controllers: [CompraController],
   providers: [CompraService],
+  exports: [CompraService],
   imports:[
     TypeOrmModule.forFeature([Compra]),
     AuthModule,

@@ -17,7 +17,7 @@ export class GradoController {
     return this.gradoService.findAll();
   }
 
-  @Get('cycle')
+  @Get('cycles')
   findForCycle() {
     return this.gradoService.findForCycle();
   }

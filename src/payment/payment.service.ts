@@ -1,5 +1,7 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import * as crypto from 'crypto';
+import { Injectable, Inject, Logger, UnauthorizedException } from '@nestjs/common';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import { CompraService } from '../compra/compra.service';
 
 @Injectable()
 export class PaymentService {
@@ -8,11 +10,9 @@ export class PaymentService {
   constructor(
     @Inject('MERCADO_PAGO')
     private readonly mpClient: MercadoPagoConfig,
+    private readonly compraService: CompraService,
   ) { }
 
-  /**
-   * Crear preferencia de pago (esto se llama desde tu endpoint)
-   */
   async createPreference(data: { title: string; price: number, idPlanificacion: string }) {
     const preference = new Preference(this.mpClient);
 
@@ -38,28 +38,80 @@ export class PaymentService {
 
     return {
       id: result.id,
-      init_point: result.init_point, // LINK PARA REDIRECCIONAR AL PAGO
+      init_point: result.init_point,
     };
   }
 
-  /**
-   * Webhook que MercadoPago llama automáticamente
-   */
   async processWebhook(body: any, signature: string, requestId: string) {
-    this.logger.debug('📩 Webhook recibido');
-    this.logger.debug('Body:', body);
-    this.logger.debug('Signature:', signature);
-    this.logger.debug('Request-ID:', requestId);
+    this.logger.log(`Webhook recibido — type: ${body?.type}, action: ${body?.action}`);
 
-    // Aquí procesás los datos del webhook
-    // ------------------------------------------------------
-    // Ejemplo de flujo:
-    // 1. body.data.id → es el pagoId
-    // 2. Consultar el pago usando MercadoPagoAPI
-    // 3. Validar si el pago está APPROVED
-    // 4. Crear la compra en tu base de datos
-    // ------------------------------------------------------
+    this.validateSignature(body, signature, requestId);
+
+    const isPaymentEvent =
+      body?.type === 'payment' || body?.action === 'payment.updated';
+
+    if (!isPaymentEvent) {
+      this.logger.log(`Evento ignorado: type=${body?.type}, action=${body?.action}`);
+      return { received: true };
+    }
+
+    const paymentId = body?.data?.id;
+    if (!paymentId) {
+      this.logger.warn('Webhook de pago recibido sin data.id');
+      return { received: true };
+    }
+
+    try {
+      const payment = await new Payment(this.mpClient).get({ id: paymentId });
+
+      this.logger.log(`Pago ${paymentId} — status: ${payment.status}`);
+
+      if (payment.status === 'approved') {
+        await this.compraService.updatePaymentStatus(String(paymentId), 'paid');
+        this.logger.log(`Compra con transactionId ${paymentId} marcada como paid`);
+      } else if (payment.status === 'rejected' || payment.status === 'cancelled') {
+        await this.compraService.updatePaymentStatus(String(paymentId), 'failed');
+        this.logger.log(`Compra con transactionId ${paymentId} marcada como failed`);
+      }
+    } catch (error) {
+      this.logger.error(`Error procesando pago ${paymentId}`, error);
+      throw error;
+    }
 
     return { received: true };
+  }
+
+  private validateSignature(body: any, signature: string, requestId: string): void {
+    const secret = process.env.MP_WEBHOOK_SECRET;
+
+    if (!secret) {
+      this.logger.warn('MP_WEBHOOK_SECRET no definido — omitiendo validación de firma (dev mode)');
+      return;
+    }
+
+    if (!signature) {
+      throw new UnauthorizedException('Invalid webhook signature');
+    }
+
+    // Parsear ts y v1 del header: "ts=<timestamp>,v1=<hash>"
+    const parts = Object.fromEntries(
+      signature.split(',').map((part) => part.split('=')),
+    );
+    const ts = parts['ts'];
+    const v1 = parts['v1'];
+
+    if (!ts || !v1) {
+      throw new UnauthorizedException('Invalid webhook signature');
+    }
+
+    const manifest = `id:${body?.data?.id};request-id:${requestId};ts:${ts}`;
+    const expectedHash = crypto
+      .createHmac('sha256', secret)
+      .update(manifest)
+      .digest('hex');
+
+    if (expectedHash !== v1) {
+      throw new UnauthorizedException('Invalid webhook signature');
+    }
   }
 }

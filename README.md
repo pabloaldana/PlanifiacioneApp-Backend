@@ -19,7 +19,7 @@
 5. Levantar la base de datos
 
 ```
-docker-composer up -d 
+docker compose up -d 
 ```
 
 6. Levantar: ```npm run start:dev```

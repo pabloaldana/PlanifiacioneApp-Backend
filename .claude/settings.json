@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_engram_engram__mem_context",
+      "mcp__plugin_engram_engram__mem_session_start",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Pablo\\\\Documents\\\\Programacion\\\\planificaciones-educativas\\\\planificaciones-backend\\\\src\" -Directory)",
+      "Bash(Select-Object Name)",
+      "mcp__plugin_engram_engram__mem_save"
+    ]
+  }
+}

@@ -31,7 +31,7 @@ import { PaymentsModule } from './payment/payment.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
 
     MateriaModule, GradoModule, PlanificacionModule, ComentarioModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule,],

@@ -7,16 +7,21 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
+  app.enableCors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist:true,
-      forbidNonWhitelisted:true,
-           // ! Excluye los campos undefined
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      // ! Excluye los campos undefined
       transformOptions: {
-        enableImplicitConversion:true,
+        enableImplicitConversion: true,
         exposeUnsetFields: false
       },
-      transform:true
+      transform: true
     })
   )
 

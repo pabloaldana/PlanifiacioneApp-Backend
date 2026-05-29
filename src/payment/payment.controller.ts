@@ -11,12 +11,11 @@ export class PaymentController {
     return this.paymentService.createPreference(body);
   }
 
-  // Webhook que recibe Mercado Pago
   @Post('webhook')
-  webhook(
+  processWebhook(
     @Body() body: any,
     @Headers('x-signature') signature: string,
-    @Headers('x-request-id') requestId: string
+    @Headers('x-request-id') requestId: string,
   ) {
     return this.paymentService.processWebhook(body, signature, requestId);
   }

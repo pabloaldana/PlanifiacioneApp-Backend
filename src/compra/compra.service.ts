@@ -33,4 +33,11 @@ export class CompraService {
     const purchases = await this.compraRepository.find()
     return purchases
   }
+
+  async updatePaymentStatus(transactionId: string, status: 'paid' | 'failed'): Promise<void> {
+    await this.compraRepository.update(
+      { transactionId },
+      { paymentStatus: status as any },
+    );
+  }
 }
