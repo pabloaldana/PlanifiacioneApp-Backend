@@ -16,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
 import { CompraModule } from './compra/compra.module';
 import { SeedModule } from './seed/seed.module';
 import { PaymentsModule } from './payment/payment.module';
+import { CartModule } from './cart/cart.module';
 
 
 
@@ -34,7 +35,7 @@ import { PaymentsModule } from './payment/payment.module';
       synchronize: process.env.NODE_ENV !== 'production',
     }),
 
-    MateriaModule, GradoModule, PlanificacionModule, ComentarioModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule,],
+    MateriaModule, GradoModule, PlanificacionModule, ComentarioModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule, CartModule,],
   controllers: [],
   providers: [],
 })
