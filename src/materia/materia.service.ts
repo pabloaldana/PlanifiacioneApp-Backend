@@ -28,8 +28,13 @@ export class MateriaService {
 
   async findAll() {
     try {
-      const materias = await this.materiaRepository.find();
-      return materias;
+      return await this.materiaRepository
+        .createQueryBuilder('materia')
+        .loadRelationCountAndMap(
+          'materia.planificacionesCount',
+          'materia.planificaciones',
+        )
+        .getMany();
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException('Unexpected error, check server logs');

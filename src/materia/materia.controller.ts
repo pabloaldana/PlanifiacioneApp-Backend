@@ -5,7 +5,7 @@ import { UpdateMateriaDto } from './dto/update-materia.dto';
 
 @Controller('materias')
 export class MateriaController {
-  constructor(private readonly materiaService: MateriaService) {}
+  constructor(private readonly materiaService: MateriaService) { }
 
   @Post()
   create(@Body() createMateriaDto: CreateMateriaDto) {

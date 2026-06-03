@@ -18,4 +18,4 @@ import { Planificacion } from 'src/planificacion/entities/planificacion.entity';
     TypeOrmModule.forFeature([User, Planificacion]),
   ]
 })
-export class SeedModule {}
+export class SeedModule { }

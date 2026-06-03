@@ -33,6 +33,8 @@ export class Materia {
         this.description = this.description.toLowerCase()
     }
 
+    planificacionesCount?: number;
+
     @OneToMany(() => Planificacion, planificacion => planificacion.materia)
     planificaciones!: Planificacion[];
 
