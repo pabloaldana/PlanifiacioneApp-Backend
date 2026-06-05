@@ -45,6 +45,12 @@ export class PlanificacionController {
     return this.planificacionService.findAll();
   }
 
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.planificacionService.findOne(id);
+  }
+
+
   @Patch(':id')
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: fileFilter,
