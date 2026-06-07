@@ -23,7 +23,7 @@ export class PlanificacionController {
   ) { }
 
   @Post()
-  @Auth(ValidRoles.superAdmin)
+  @Auth(ValidRoles.admin)
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: fileFilter,
     limits: { fileSize: 10 * 1024 * 1024 },

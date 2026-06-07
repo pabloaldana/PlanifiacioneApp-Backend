@@ -27,8 +27,19 @@ export class GradoService {
   }
 
   async findAll() {
-    const grados = await this.gradoRepository.find()
-    return grados;
+    try {
+      return await this.gradoRepository
+        .createQueryBuilder('grado')
+        .select(['grado.id', 'grado.name', 'grado.numero'])
+        .loadRelationCountAndMap(
+          'grado.planificacionesCount',
+          'grado.planificacion',
+        )
+        .getMany();
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Unexpected error, check server logs');
+    }
   }
 
   async findForCycle() {

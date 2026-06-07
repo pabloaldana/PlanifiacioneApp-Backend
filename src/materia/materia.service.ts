@@ -30,6 +30,7 @@ export class MateriaService {
     try {
       return await this.materiaRepository
         .createQueryBuilder('materia')
+        .select(['materia.id', 'materia.name', 'materia.description'])
         .loadRelationCountAndMap(
           'materia.planificacionesCount',
           'materia.planificaciones',
