@@ -10,11 +10,8 @@ export class PaymentController {
 
   @Auth()
   @Post('create-preference')
-  createPreference(
-    @Body() body: { title: string; price: number; idPlanificacion: number },
-    @GetUser() user: User,
-  ) {
-    return this.paymentService.createPreference(body, user);
+  createPreference(@GetUser() user: User) {
+    return this.paymentService.createPreference(user);
   }
 
   @Post('webhook')

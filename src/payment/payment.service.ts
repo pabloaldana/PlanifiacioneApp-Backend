@@ -1,8 +1,9 @@
 import * as crypto from 'crypto';
-import { Injectable, Inject, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { CompraService } from '../compra/compra.service';
+import { CartService } from '../cart/cart.service';
 import { User } from '../auth/entities/auth.entity';
 import { PaymentStatus } from '../compra/entities/compra.entity';
 
@@ -14,49 +15,67 @@ export class PaymentService {
     @Inject('MERCADO_PAGO')
     private readonly mpClient: MercadoPagoConfig,
     private readonly compraService: CompraService,
+    private readonly cartService: CartService,
     private readonly configService: ConfigService,
   ) { }
 
-  async createPreference(
-    data: { title: string; price: number; idPlanificacion: number },
-    user: User,
-  ) {
-    // 1. Crear la compra en pending ANTES de ir a Mercado Pago
-    const compra = await this.compraService.create({
-      userId: user.id,
-      planificacionId: data.idPlanificacion,
-      priceAtPurchase: data.price,
-      paymentMethod: 'mercadopago',
-      paymentStatus: PaymentStatus.PENDING,
-    });
+  async createPreference(user: User) {
+    // 1. Buscar el carrito del usuario — un usuario tiene un solo carrito
+    const cart = await this.cartService.getMyCart(user);
 
-    // 2. Crear la preferencia usando el ID de la compra como referencia externa
+    if (!cart.items || cart.items.length === 0) {
+      throw new BadRequestException('El carrito está vacío');
+    }
+
+    // 2. Crear una Compra por cada item — precio viene de priceAtAdded, nunca del cliente
+    const compras = await Promise.all(
+      cart.items.map((item) =>
+        this.compraService.create({
+          userId: user.id,
+          planificacionId: item.planificacion.id,
+          priceAtPurchase: item.priceAtAdded,
+          paymentMethod: 'mercadopago',
+          paymentStatus: PaymentStatus.PENDING,
+        }),
+      ),
+    );
+
+    // 3. external_reference agrupa todos los IDs de compras separados por coma
+    const externalReference = compras.map((c) => c.id).join(',');
+
     const preference = new Preference(this.mpClient);
     const notificationUrl = this.configService.get<string>('MP_NOTIFICATION_URL');
+    const backUrlSuccess = this.configService.get<string>('MP_BACK_URL_SUCCESS');
+    const backUrlPending = this.configService.get<string>('MP_BACK_URL_PENDING');
+    const backUrlFailure = this.configService.get<string>('MP_BACK_URL_FAILURE');
+    const hasBackUrls = backUrlSuccess && backUrlPending && backUrlFailure;
 
     const result = await preference.create({
       body: {
-        items: [
-          {
-            id: String(data.idPlanificacion),
-            title: data.title,
-            quantity: 1,
-            unit_price: data.price,
+        items: cart.items.map((item) => ({
+          id: String(item.planificacion.id),
+          title: item.planificacion.title,
+          quantity: 1,
+          unit_price: Number(item.priceAtAdded),
+        })),
+        external_reference: externalReference,
+        ...(hasBackUrls && {
+          back_urls: {
+            success: backUrlSuccess,
+            pending: backUrlPending,
+            failure: backUrlFailure,
           },
-        ],
-        external_reference: compra.id,
-        back_urls: {
-          success: this.configService.get('MP_BACK_URL_SUCCESS') ?? 'http://localhost:3000/success',
-          pending: this.configService.get('MP_BACK_URL_PENDING') ?? 'http://localhost:3000/pending',
-          failure: this.configService.get('MP_BACK_URL_FAILURE') ?? 'http://localhost:3000/failure',
-        },
-        auto_return: 'approved',
+          auto_return: 'approved',
+        }),
         ...(notificationUrl && { notification_url: notificationUrl }),
       },
     });
 
+    // 4. Vaciar el carrito — el usuario ya inició el proceso de pago
+    await this.cartService.clearCart(user);
+
     return {
-      compraId: compra.id,
+      compraIds: compras.map((c) => c.id),
       preferenceId: result.id,
       init_point: result.init_point,
     };
@@ -85,18 +104,28 @@ export class PaymentService {
       const payment = await new Payment(this.mpClient).get({ id: paymentId });
       this.logger.log(`Pago ${paymentId} — status: ${payment.status}`);
 
-      const compraId = payment.external_reference;
-      if (!compraId) {
+      const externalReference = payment.external_reference;
+      if (!externalReference) {
         this.logger.warn(`Pago ${paymentId} sin external_reference — se ignora`);
         return { received: true };
       }
 
+      const compraIds = externalReference.split(',');
+
       if (payment.status === 'approved') {
-        await this.compraService.updateCompraAfterPayment(compraId, String(paymentId), 'paid');
-        this.logger.log(`Compra ${compraId} marcada como paid (transactionId: ${paymentId})`);
+        await Promise.all(
+          compraIds.map((compraId) =>
+            this.compraService.updateCompraAfterPayment(compraId, String(paymentId), 'paid'),
+          ),
+        );
+        this.logger.log(`${compraIds.length} compra(s) marcadas como paid (transactionId: ${paymentId})`);
       } else if (payment.status === 'rejected' || payment.status === 'cancelled') {
-        await this.compraService.updateCompraAfterPayment(compraId, String(paymentId), 'failed');
-        this.logger.log(`Compra ${compraId} marcada como failed (transactionId: ${paymentId})`);
+        await Promise.all(
+          compraIds.map((compraId) =>
+            this.compraService.updateCompraAfterPayment(compraId, String(paymentId), 'failed'),
+          ),
+        );
+        this.logger.log(`${compraIds.length} compra(s) marcadas como failed (transactionId: ${paymentId})`);
       }
     } catch (error) {
       this.logger.error(`Error procesando pago ${paymentId}`, error);
