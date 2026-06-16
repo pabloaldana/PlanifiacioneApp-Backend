@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsNumber } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsNumber, IsInt, IsPositive } from 'class-validator';
 import { PaymentStatus } from '../entities/compra.entity';
 
 export class CreateCompraDto {
@@ -6,9 +6,10 @@ export class CreateCompraDto {
   @IsNotEmpty()
   userId!: string;
 
-  @IsUUID()
-  @IsNotEmpty()
-  planificacionId!: string;
+  // Planificacion.id es un entero autoincremental, no un UUID
+  @IsInt()
+  @IsPositive()
+  planificacionId!: number;
 
   // Precio congelado en el momento de la compra
   @IsNumber()

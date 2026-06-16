@@ -59,6 +59,38 @@ export const inicialData = {
       lastname: 'Demo',
       isActive: true,
     },
+    {
+      email: 'maria.gonzalez@example.com',
+      password: '123Abc',
+      name: 'María',
+      lastname: 'González',
+      isActive: true,
+      roles: ['user']
+    },
+    {
+      email: 'juan.perez@example.com',
+      password: '123Abc',
+      name: 'Juan',
+      lastname: 'Pérez',
+      isActive: true,
+      roles: ['user']
+    },
+    {
+      email: 'lucia.fernandez@example.com',
+      password: '123Abc',
+      name: 'Lucía',
+      lastname: 'Fernández',
+      isActive: true,
+      roles: ['user']
+    },
+    {
+      email: 'carlos.rodriguez@example.com',
+      password: '123Abc',
+      name: 'Carlos',
+      lastname: 'Rodríguez',
+      isActive: false,
+      roles: ['user']
+    },
   ],
 
   /* ======================================================
@@ -129,6 +161,110 @@ export const inicialData = {
       gradoNumero: 7,
       url: 'https://res.cloudinary.com/demo/raw/upload/v1/planificaciones/tecnologia-7mo-grado.pdf',
       public_id: 'planificaciones/tecnologia-7mo-grado',
+    },
+  ],
+
+  /* ======================================================
+      SEED DE COMPRAS
+      userEmail y planificacionTitle se usan para resolver
+      las relaciones luego de insertar usuarios y planificaciones
+  ====================================================== */
+  COMPRAS_SEED: [
+    {
+      userEmail: 'user@example.com',
+      planificacionTitle: 'Planificación Anual de Lengua - 1er Grado',
+      priceAtPurchase: 500,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0001',
+    },
+    {
+      userEmail: 'user@example.com',
+      planificacionTitle: 'Planificación de Matemática - 3er Grado',
+      priceAtPurchase: 400,
+      paymentStatus: 'paid',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0002',
+    },
+    {
+      userEmail: 'user@example.com',
+      planificacionTitle: 'Planificación de Ciencias Naturales - 5to Grado',
+      priceAtPurchase: 600,
+      paymentStatus: 'pending',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0003',
+    },
+    {
+      userEmail: 'admin@example.com',
+      planificacionTitle: 'Planificación de Inglés - 2do Grado',
+      priceAtPurchase: 350,
+      paymentStatus: 'failed',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0004',
+    },
+    {
+      userEmail: 'maria.gonzalez@example.com',
+      planificacionTitle: 'Planificación de Ciencias Sociales - 4to Grado',
+      priceAtPurchase: 450,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0005',
+    },
+    {
+      userEmail: 'juan.perez@example.com',
+      planificacionTitle: 'Planificación de Tecnología - 7mo Grado',
+      priceAtPurchase: 550,
+      paymentStatus: 'paid',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0006',
+    },
+    {
+      userEmail: 'lucia.fernandez@example.com',
+      planificacionTitle: 'Planificación Anual de Lengua - 1er Grado',
+      priceAtPurchase: 500,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0007',
+    },
+    {
+      userEmail: 'carlos.rodriguez@example.com',
+      planificacionTitle: 'Planificación de Matemática - 6to Grado',
+      priceAtPurchase: 500,
+      paymentStatus: 'refunded',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0008',
+    },
+    {
+      userEmail: 'maria.gonzalez@example.com',
+      planificacionTitle: 'Planificación de Ciencias Naturales - 5to Grado',
+      priceAtPurchase: 600,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0009',
+    },
+    {
+      userEmail: 'juan.perez@example.com',
+      planificacionTitle: 'Planificación de Inglés - 2do Grado',
+      priceAtPurchase: 350,
+      paymentStatus: 'pending',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0010',
+    },
+    {
+      userEmail: 'lucia.fernandez@example.com',
+      planificacionTitle: 'Planificación de Ciencias Sociales - 4to Grado',
+      priceAtPurchase: 450,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0011',
+    },
+    {
+      userEmail: 'user@example.com',
+      planificacionTitle: 'Planificación de Tecnología - 7mo Grado',
+      priceAtPurchase: 550,
+      paymentStatus: 'paid',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0012',
     },
   ]
 

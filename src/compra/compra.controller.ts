@@ -1,24 +1,24 @@
-import { Controller, Get, Post, Body} from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { CompraService } from './compra.service';
 import { Auth, GetUser } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 import { User } from 'src/auth/entities/auth.entity';
 
-@Controller('compra')
+@Controller('compras')
 export class CompraController {
-  constructor(private readonly compraService: CompraService) {}
+  constructor(private readonly compraService: CompraService) { }
 
 
-  @Get('compras/mias')
+  @Get('/mias')
   @Auth(ValidRoles.user) //si no viene nada es para todos
   findMyPurchases(@GetUser() user: User) {
     // console.log(user)
     return this.compraService.findMyPurchases(user);
   }
 
-  @Get("compras")
+  @Get()
   @Auth(ValidRoles.superAdmin)
-  findAllPurchases(){
+  findAllPurchases() {
     return this.compraService.findAllPurchases()
   }
 

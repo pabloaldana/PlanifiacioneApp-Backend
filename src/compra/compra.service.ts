@@ -10,10 +10,10 @@ export class CompraService {
 
   constructor(
     @InjectRepository(Compra)
-    private readonly compraRepository:Repository<Compra> 
-  ){}
+    private readonly compraRepository: Repository<Compra>
+  ) { }
 
-  async create (createCompraDto:CreateCompraDto){
+  async create(createCompraDto: CreateCompraDto) {
     const newCompra = this.compraRepository.create(createCompraDto)
     await this.compraRepository.save(newCompra)
     return newCompra
@@ -23,13 +23,13 @@ export class CompraService {
 
     const purchases = await this.compraRepository.find({
       where: { user: { id: user.id } },
-      // relations: ['planificacion'], // opcional si querés traer info relacionada
+      relations: ['planificacion'], // opcional si querés traer info relacionada
     });
 
     return purchases;
   }
 
-  async findAllPurchases(){
+  async findAllPurchases() {
     const purchases = await this.compraRepository.find()
     return purchases
   }
@@ -38,6 +38,13 @@ export class CompraService {
     await this.compraRepository.update(
       { transactionId },
       { paymentStatus: status as any },
+    );
+  }
+
+  async updateCompraAfterPayment(compraId: string, transactionId: string, status: 'paid' | 'failed'): Promise<void> {
+    await this.compraRepository.update(
+      { id: compraId },
+      { paymentStatus: status as any, transactionId },
     );
   }
 }

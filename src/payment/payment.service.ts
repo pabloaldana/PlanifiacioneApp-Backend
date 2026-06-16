@@ -1,7 +1,10 @@
 import * as crypto from 'crypto';
 import { Injectable, Inject, Logger, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { CompraService } from '../compra/compra.service';
+import { User } from '../auth/entities/auth.entity';
+import { PaymentStatus } from '../compra/entities/compra.entity';
 
 @Injectable()
 export class PaymentService {
@@ -11,33 +14,50 @@ export class PaymentService {
     @Inject('MERCADO_PAGO')
     private readonly mpClient: MercadoPagoConfig,
     private readonly compraService: CompraService,
+    private readonly configService: ConfigService,
   ) { }
 
-  async createPreference(data: { title: string; price: number, idPlanificacion: string }) {
+  async createPreference(
+    data: { title: string; price: number; idPlanificacion: number },
+    user: User,
+  ) {
+    // 1. Crear la compra en pending ANTES de ir a Mercado Pago
+    const compra = await this.compraService.create({
+      userId: user.id,
+      planificacionId: data.idPlanificacion,
+      priceAtPurchase: data.price,
+      paymentMethod: 'mercadopago',
+      paymentStatus: PaymentStatus.PENDING,
+    });
+
+    // 2. Crear la preferencia usando el ID de la compra como referencia externa
     const preference = new Preference(this.mpClient);
+    const notificationUrl = this.configService.get<string>('MP_NOTIFICATION_URL');
 
-    const preferenceBody = {
-      items: [
-        {
-          id: data.idPlanificacion,
-          title: data.title,
-          quantity: 1,
-          unit_price: data.price,
+    const result = await preference.create({
+      body: {
+        items: [
+          {
+            id: String(data.idPlanificacion),
+            title: data.title,
+            quantity: 1,
+            unit_price: data.price,
+          },
+        ],
+        external_reference: compra.id,
+        back_urls: {
+          success: this.configService.get('MP_BACK_URL_SUCCESS') ?? 'http://localhost:3000/success',
+          pending: this.configService.get('MP_BACK_URL_PENDING') ?? 'http://localhost:3000/pending',
+          failure: this.configService.get('MP_BACK_URL_FAILURE') ?? 'http://localhost:3000/failure',
         },
-      ],
-      back_urls: {
-        success: 'https://tusitio.com/success',
-        pending: 'https://tusitio.com/pending',
-        failure: 'https://tusitio.com/failure',
+        auto_return: 'approved',
+        ...(notificationUrl && { notification_url: notificationUrl }),
       },
-      auto_return: 'approved',
-      notification_url: 'https://tusitio.com/payments/webhook',
-    };
-
-    const result = await preference.create({ body: preferenceBody });
+    });
 
     return {
-      id: result.id,
+      compraId: compra.id,
+      preferenceId: result.id,
       init_point: result.init_point,
     };
   }
@@ -63,15 +83,20 @@ export class PaymentService {
 
     try {
       const payment = await new Payment(this.mpClient).get({ id: paymentId });
-
       this.logger.log(`Pago ${paymentId} — status: ${payment.status}`);
 
+      const compraId = payment.external_reference;
+      if (!compraId) {
+        this.logger.warn(`Pago ${paymentId} sin external_reference — se ignora`);
+        return { received: true };
+      }
+
       if (payment.status === 'approved') {
-        await this.compraService.updatePaymentStatus(String(paymentId), 'paid');
-        this.logger.log(`Compra con transactionId ${paymentId} marcada como paid`);
+        await this.compraService.updateCompraAfterPayment(compraId, String(paymentId), 'paid');
+        this.logger.log(`Compra ${compraId} marcada como paid (transactionId: ${paymentId})`);
       } else if (payment.status === 'rejected' || payment.status === 'cancelled') {
-        await this.compraService.updatePaymentStatus(String(paymentId), 'failed');
-        this.logger.log(`Compra con transactionId ${paymentId} marcada como failed`);
+        await this.compraService.updateCompraAfterPayment(compraId, String(paymentId), 'failed');
+        this.logger.log(`Compra ${compraId} marcada como failed (transactionId: ${paymentId})`);
       }
     } catch (error) {
       this.logger.error(`Error procesando pago ${paymentId}`, error);
@@ -93,7 +118,6 @@ export class PaymentService {
       throw new UnauthorizedException('Invalid webhook signature');
     }
 
-    // Parsear ts y v1 del header: "ts=<timestamp>,v1=<hash>"
     const parts = Object.fromEntries(
       signature.split(',').map((part) => part.split('=')),
     );
