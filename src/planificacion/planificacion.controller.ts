@@ -17,27 +17,27 @@ import { User } from 'src/auth/entities/auth.entity';
 export class PlanificacionController {
   constructor(
     private readonly planificacionService: PlanificacionService,
-    private readonly fileService : FilesService,
-    private readonly authService : AuthService,
-    private readonly  jwtService:JwtService
-  ) {}
+    private readonly fileService: FilesService,
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService
+  ) { }
 
   @Post()
-  @Auth(ValidRoles.superAdmin)
+  @Auth(ValidRoles.admin)
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: fileFilter,
     limits: { fileSize: 10 * 1024 * 1024 },
   }))
   async create(
-    @Body() createPlanificacionDto: CreatePlanificacionDto, 
+    @Body() createPlanificacionDto: CreatePlanificacionDto,
     @UploadedFile() file: Express.Multer.File,
     @GetUser() user: User
-  ){
-    if(!file) throw new BadRequestException('El archivo PDF es obligatorio')
+  ) {
+    if (!file) throw new BadRequestException('El archivo PDF es obligatorio')
 
-    const {url,public_id} = await this.fileService.uploadFile(file)
+    const { url, public_id } = await this.fileService.uploadFile(file)
 
-    return this.planificacionService.create(createPlanificacionDto,url,public_id,user.id);
+    return this.planificacionService.create(createPlanificacionDto, url, public_id, user.id);
   }
 
   @Get()
@@ -45,20 +45,26 @@ export class PlanificacionController {
     return this.planificacionService.findAll();
   }
 
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.planificacionService.findOne(id);
+  }
+
+
   @Patch(':id')
-   @UseInterceptors(FileInterceptor('file', {
+  @UseInterceptors(FileInterceptor('file', {
     fileFilter: fileFilter,
     limits: { fileSize: 10 * 1024 * 1024 },
   }))
   async update(
-    @Param('id',ParseIntPipe) id: number, 
+    @Param('id', ParseIntPipe) id: number,
     @Body() updatePlanificacionDto: UpdatePlanificacionDto,
     @UploadedFile() file: Express.Multer.File,) {
-      if(file){
-        const {url,public_id} = await this.fileService.uploadFile(file)
-        return this.planificacionService.update(id,updatePlanificacionDto,url,public_id);
-      }
-    return this.planificacionService.update(id,updatePlanificacionDto);
+    if (file) {
+      const { url, public_id } = await this.fileService.uploadFile(file)
+      return this.planificacionService.update(id, updatePlanificacionDto, url, public_id);
+    }
+    return this.planificacionService.update(id, updatePlanificacionDto);
   }
 }
 

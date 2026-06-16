@@ -73,6 +73,18 @@ export class AuthService {
       token: this.getJwtToken({ id: user.id })
     }
   }
+  getProfile(user: User) {
+    const { password, ...profile } = user as any;
+    return profile;
+  }
+
+  async updateProfile(user: User, data: { name?: string; lastname?: string }) {
+    await this.userRepository.update({ id: user.id }, data);
+    const updated = await this.userRepository.findOneBy({ id: user.id });
+    const { password, ...profile } = updated as any;
+    return profile;
+  }
+
   private getJwtToken(payload: JwtPayload) {
     const token = this.jwtService.sign(payload);
     return token;

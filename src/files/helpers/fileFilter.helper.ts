@@ -1,10 +1,9 @@
 import { BadRequestException } from "@nestjs/common"
-import { error } from "console"
 
 export const fileFilter =  (req:Express.Request,file:Express.Multer.File, callback:Function)=>
 {
     // console.log('file')
-    if (!file) return callback(new error('file is empty'),false)
+    if (!file) return callback(new BadRequestException('El archivo es obligatorio'),false)
     
     const fileExtension = file.mimetype.split('/')[1]
     const validExtension = ['pdf','msword','vnd.openxmlformats-officedocument.wordprocessingml.document'] //el ultimo es para .doc

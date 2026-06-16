@@ -59,6 +59,213 @@ export const inicialData = {
       lastname: 'Demo',
       isActive: true,
     },
+    {
+      email: 'maria.gonzalez@example.com',
+      password: '123Abc',
+      name: 'María',
+      lastname: 'González',
+      isActive: true,
+      roles: ['user']
+    },
+    {
+      email: 'juan.perez@example.com',
+      password: '123Abc',
+      name: 'Juan',
+      lastname: 'Pérez',
+      isActive: true,
+      roles: ['user']
+    },
+    {
+      email: 'lucia.fernandez@example.com',
+      password: '123Abc',
+      name: 'Lucía',
+      lastname: 'Fernández',
+      isActive: true,
+      roles: ['user']
+    },
+    {
+      email: 'carlos.rodriguez@example.com',
+      password: '123Abc',
+      name: 'Carlos',
+      lastname: 'Rodríguez',
+      isActive: false,
+      roles: ['user']
+    },
+  ],
+
+  /* ======================================================
+      SEED DE PLANIFICACIONES
+      materiaName y gradoNumero se usan para buscar los IDs
+      luego de insertar materias y grados
+  ====================================================== */
+  PLANIFICACIONES_SEED: [
+    {
+      title: 'Planificación Anual de Lengua - 1er Grado',
+      description: 'Secuencia didáctica anual para trabajar la lectura y escritura inicial en primer grado',
+      price: 500,
+      materiaName: 'lengua y literatura',
+      gradoNumero: 1,
+      url: 'https://res.cloudinary.com/demo/raw/upload/v1/planificaciones/lengua-1er-grado.pdf',
+      public_id: 'planificaciones/lengua-1er-grado',
+    },
+    {
+      title: 'Planificación de Matemática - 3er Grado',
+      description: 'Unidades didácticas sobre multiplicación y división para tercer grado',
+      price: 400,
+      materiaName: 'matemática',
+      gradoNumero: 3,
+      url: 'https://res.cloudinary.com/demo/raw/upload/v1/planificaciones/matematica-3er-grado.pdf',
+      public_id: 'planificaciones/matematica-3er-grado',
+    },
+    {
+      title: 'Planificación de Ciencias Naturales - 5to Grado',
+      description: 'Proyectos sobre el cuerpo humano y los ecosistemas para quinto grado',
+      price: 600,
+      materiaName: 'ciencias naturales',
+      gradoNumero: 5,
+      url: 'https://res.cloudinary.com/demo/raw/upload/v1/planificaciones/naturales-5to-grado.pdf',
+      public_id: 'planificaciones/naturales-5to-grado',
+    },
+    {
+      title: 'Planificación de Ciencias Sociales - 4to Grado',
+      description: 'Secuencia sobre geografía argentina e historia contemporánea para cuarto grado',
+      price: 450,
+      materiaName: 'ciencias sociales',
+      gradoNumero: 4,
+      url: 'https://res.cloudinary.com/demo/raw/upload/v1/planificaciones/sociales-4to-grado.pdf',
+      public_id: 'planificaciones/sociales-4to-grado',
+    },
+    {
+      title: 'Planificación de Inglés - 2do Grado',
+      description: 'Introducción al inglés mediante juegos y canciones para segundo grado',
+      price: 350,
+      materiaName: 'inglés',
+      gradoNumero: 2,
+      url: 'https://res.cloudinary.com/demo/raw/upload/v1/planificaciones/ingles-2do-grado.pdf',
+      public_id: 'planificaciones/ingles-2do-grado',
+    },
+    {
+      title: 'Planificación de Matemática - 6to Grado',
+      description: 'Fracciones, decimales y problemas de razonamiento para sexto grado',
+      price: 500,
+      materiaName: 'matemática',
+      gradoNumero: 6,
+      url: 'https://res.cloudinary.com/demo/raw/upload/v1/planificaciones/matematica-6to-grado.pdf',
+      public_id: 'planificaciones/matematica-6to-grado',
+    },
+    {
+      title: 'Planificación de Tecnología - 7mo Grado',
+      description: 'Introducción a la programación y el pensamiento computacional para séptimo grado',
+      price: 550,
+      materiaName: 'tecnología',
+      gradoNumero: 7,
+      url: 'https://res.cloudinary.com/demo/raw/upload/v1/planificaciones/tecnologia-7mo-grado.pdf',
+      public_id: 'planificaciones/tecnologia-7mo-grado',
+    },
+  ],
+
+  /* ======================================================
+      SEED DE COMPRAS
+      userEmail y planificacionTitle se usan para resolver
+      las relaciones luego de insertar usuarios y planificaciones
+  ====================================================== */
+  COMPRAS_SEED: [
+    {
+      userEmail: 'user@example.com',
+      planificacionTitle: 'Planificación Anual de Lengua - 1er Grado',
+      priceAtPurchase: 500,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0001',
+    },
+    {
+      userEmail: 'user@example.com',
+      planificacionTitle: 'Planificación de Matemática - 3er Grado',
+      priceAtPurchase: 400,
+      paymentStatus: 'paid',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0002',
+    },
+    {
+      userEmail: 'user@example.com',
+      planificacionTitle: 'Planificación de Ciencias Naturales - 5to Grado',
+      priceAtPurchase: 600,
+      paymentStatus: 'pending',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0003',
+    },
+    {
+      userEmail: 'admin@example.com',
+      planificacionTitle: 'Planificación de Inglés - 2do Grado',
+      priceAtPurchase: 350,
+      paymentStatus: 'failed',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0004',
+    },
+    {
+      userEmail: 'maria.gonzalez@example.com',
+      planificacionTitle: 'Planificación de Ciencias Sociales - 4to Grado',
+      priceAtPurchase: 450,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0005',
+    },
+    {
+      userEmail: 'juan.perez@example.com',
+      planificacionTitle: 'Planificación de Tecnología - 7mo Grado',
+      priceAtPurchase: 550,
+      paymentStatus: 'paid',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0006',
+    },
+    {
+      userEmail: 'lucia.fernandez@example.com',
+      planificacionTitle: 'Planificación Anual de Lengua - 1er Grado',
+      priceAtPurchase: 500,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0007',
+    },
+    {
+      userEmail: 'carlos.rodriguez@example.com',
+      planificacionTitle: 'Planificación de Matemática - 6to Grado',
+      priceAtPurchase: 500,
+      paymentStatus: 'refunded',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0008',
+    },
+    {
+      userEmail: 'maria.gonzalez@example.com',
+      planificacionTitle: 'Planificación de Ciencias Naturales - 5to Grado',
+      priceAtPurchase: 600,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0009',
+    },
+    {
+      userEmail: 'juan.perez@example.com',
+      planificacionTitle: 'Planificación de Inglés - 2do Grado',
+      priceAtPurchase: 350,
+      paymentStatus: 'pending',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0010',
+    },
+    {
+      userEmail: 'lucia.fernandez@example.com',
+      planificacionTitle: 'Planificación de Ciencias Sociales - 4to Grado',
+      priceAtPurchase: 450,
+      paymentStatus: 'paid',
+      paymentMethod: 'mercadopago',
+      transactionId: 'TXN-0011',
+    },
+    {
+      userEmail: 'user@example.com',
+      planificacionTitle: 'Planificación de Tecnología - 7mo Grado',
+      priceAtPurchase: 550,
+      paymentStatus: 'paid',
+      paymentMethod: 'stripe',
+      transactionId: 'TXN-0012',
+    },
   ]
 
 }

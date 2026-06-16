@@ -13,6 +13,7 @@ import { PassportModule } from '@nestjs/passport';
 @Module({
   controllers: [PlanificacionController],
   providers: [PlanificacionService,FilesService,AuthService],
+  exports: [PlanificacionService],
   imports:[
     TypeOrmModule.forFeature([Planificacion]),
     FilesModule,

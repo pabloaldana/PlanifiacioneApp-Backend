@@ -11,12 +11,12 @@ export class PlanificacionService {
 
   constructor(
     @InjectRepository(Planificacion)
-    private readonly planifiacionRepository : Repository<Planificacion>,
-    private readonly fileService : FilesService
-  ){}
+    private readonly planifiacionRepository: Repository<Planificacion>,
+    private readonly fileService: FilesService
+  ) { }
 
 
-  async create(createPlanificacionDto: CreatePlanificacionDto,url:string,public_id:string,userId) {
+  async create(createPlanificacionDto: CreatePlanificacionDto, url: string, public_id: string, userId) {
 
     const newPlanificacion = this.planifiacionRepository.create({
       title: createPlanificacionDto.title,
@@ -27,8 +27,8 @@ export class PlanificacionService {
       materia: { id: createPlanificacionDto.materiaId },   // RELACIÓN
       grado: { id: createPlanificacionDto.gradoId },       // RELACIÓN
       user: { id: userId } //las relaciones se hacen asi
-    //!COMO ERROR LO ESTABA HACIENDO id_user_creador EL NOMBRE QUE LE PUSE EN LA RELACION PERO ESTA MAL ES COMO ESTA ARRIBA
-             // creador
+      //!COMO ERROR LO ESTABA HACIENDO id_user_creador EL NOMBRE QUE LE PUSE EN LA RELACION PERO ESTA MAL ES COMO ESTA ARRIBA
+      // creador
     });
 
     await this.planifiacionRepository.save(newPlanificacion)
@@ -37,30 +37,32 @@ export class PlanificacionService {
 
   async findAll() {
     const planificaciones = await this.planifiacionRepository.find()
-    
+
     return planificaciones;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} planificacion`;
+  async findOne(id: number) {
+    const planificacion = await this.planifiacionRepository.findOneBy({ id });
+    if (!planificacion) throw new NotFoundException(`Planificacion with id ${id} not found`);
+    return planificacion;
   }
 
-  async update(id: number, 
+  async update(id: number,
     updatePlanificacionDto: UpdatePlanificacionDto,
-    url?:string,
-    public_id?:string) {
+    url?: string,
+    public_id?: string) {
     //controlar que el titulo no este ya en la tabla porque es unique
 
     const planificacion = await this.planifiacionRepository.findOne({
-      where:{id},
-      relations:['user'] //esta linea me muestra el usuario que creo la planifiacion
+      where: { id },
+      relations: ['user'] //esta linea me muestra el usuario que creo la planifiacion
     })
 
-    if(!planificacion) throw new NotFoundException ('Planificacion no encontrada')
-    
-    if(updatePlanificacionDto.title !== undefined){
+    if (!planificacion) throw new NotFoundException('Planificacion no encontrada')
+
+    if (updatePlanificacionDto.title !== undefined) {
       const existsTitle = await this.planifiacionRepository.findOne({
-        where: {title: updatePlanificacionDto.title}
+        where: { title: updatePlanificacionDto.title }
       })
 
       // Validar si existe y NO es la misma planificacion
@@ -71,14 +73,14 @@ export class PlanificacionService {
 
     //todo: Actualizar solo los campos enviados, evita tener que hacer if, ya filta los campos con undefined
     const dataToUpdate = Object.fromEntries(
-    Object.entries(updatePlanificacionDto).filter(([_, value]) => value !== undefined)
+      Object.entries(updatePlanificacionDto).filter(([_, value]) => value !== undefined)
     );
 
     Object.assign(planificacion, dataToUpdate);
-    if(url !== undefined){
+    if (url !== undefined) {
       planificacion.url = url
-    } 
-    if (public_id !== undefined){
+    }
+    if (public_id !== undefined) {
       planificacion.public_id = public_id
     }
     await this.planifiacionRepository.save(planificacion)

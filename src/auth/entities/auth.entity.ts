@@ -1,7 +1,8 @@
 import { Compra } from "src/compra/entities/compra.entity";
+import { Cart } from "src/cart/entities/cart.entity";
 import { Planificacion } from "src/planificacion/entities/planificacion.entity";
 
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 
 @Entity('users')
@@ -59,7 +60,7 @@ export class User {
     @OneToMany(() => Compra, (compra) => compra.user)
     compras!: Compra[];
 
-
-    //todo: eager:true hace que cada vez que traiga un user, me traiga el rol asociado
+    @OneToOne(() => Cart, { nullable: true })
+    cart!: Cart;
 }
 
