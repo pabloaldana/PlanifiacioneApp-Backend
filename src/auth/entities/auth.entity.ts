@@ -2,7 +2,7 @@ import { Compra } from "src/compra/entities/compra.entity";
 import { Cart } from "src/cart/entities/cart.entity";
 import { Planificacion } from "src/planificacion/entities/planificacion.entity";
 
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 
 @Entity('users')
@@ -31,11 +31,21 @@ export class User {
     })
     isActive!: boolean
 
+    @CreateDateColumn()
+    createdAt!: Date;
+
+
     @Column('text', {
         array: true,
         default: ['user']
     })
     roles!: string[];
+
+    @Column('varchar', { nullable: true })
+    resetPasswordCode!: string | null;
+
+    @Column('timestamp', { nullable: true })
+    resetPasswordExpires!: Date | null;
 
     //!si un usuario comun quiere empezar a vender planificaciones tendria que tener un rol mnas para diferenciarlo de la duena para poder cobrarle interes en las ventas
 

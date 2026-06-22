@@ -1,15 +1,18 @@
-import { BadGatewayException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import { CreateUserDto, LoginUserDto } from './dto/index';
+import { BadGatewayException, BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { CreateUserDto, LoginUserDto, ForgotPasswordDto, ResetPasswordDto, RefreshTokenDto } from './dto/index';
 
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { User } from './entities/auth.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 
-import *as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt'
+import * as crypto from 'crypto'
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces';
+import { MailService } from 'src/mail/mail.service';
 
-
+const REFRESH_TOKEN_TTL_DAYS = 30;
 
 @Injectable()
 export class AuthService {
@@ -18,8 +21,11 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
 
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) { }
 
   async create(createUserDto: CreateUserDto) {
@@ -27,23 +33,19 @@ export class AuthService {
       //destructuro para no guardar la contraseña sin hashear
       const { password, ...userData } = createUserDto;
 
-      // const defaultRol = await this.rolRepository.findOneBy({ id: 3 });
-      // if (!defaultRol) throw new Error("El rol con id 3 no existe");
-
       const newUser = this.userRepository.create({
         ...userData,
         password: bcrypt.hashSync(password, 10),
-        // rol: defaultRol
       });
 
       await this.userRepository.save(newUser);
 
-      //destructuro para no devolver la contraseña hasheada que no la quiero mostrar
-      const { password: _, ...userInfo } = newUser;
+      const refreshToken = await this.generateRefreshToken(newUser);
 
       return {
-        ...userInfo,
-        token: this.jwtService.sign({ id: newUser.id })
+        ...this.sanitizeUser(newUser),
+        token: this.getJwtToken({ id: newUser.id }),
+        refreshToken,
       }
 
     } catch (error) {
@@ -57,7 +59,6 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({
       where: { email },
-      // select: { email: true, password: true, id: true }
     })
 
     if (!user) throw new UnauthorizedException('Credentials are not valid');
@@ -66,23 +67,152 @@ export class AuthService {
 
     if (!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('Credentials are not valid');
 
-    //password: _ es para no mostrar la contraseña hasheada en la respuesta
-    const { password: _, ...userWithoutPassword } = user
+    const refreshToken = await this.generateRefreshToken(user);
+
     return {
-      ...userWithoutPassword,
-      token: this.getJwtToken({ id: user.id })
+      ...this.sanitizeUser(user),
+      token: this.getJwtToken({ id: user.id }),
+      refreshToken,
     }
   }
+
+  async refreshTokens(dto: RefreshTokenDto) {
+    const tokenHash = this.hashToken(dto.refreshToken);
+
+    const storedToken = await this.refreshTokenRepository.findOne({
+      where: { tokenHash, revoked: false, expiresAt: MoreThan(new Date()) },
+      relations: ['user'],
+    });
+
+    if (!storedToken) throw new UnauthorizedException('Refresh token inválido o expirado');
+
+    // Rotación: invalido el viejo y genero uno nuevo
+    storedToken.revoked = true;
+    await this.refreshTokenRepository.save(storedToken);
+
+    const newRefreshToken = await this.generateRefreshToken(storedToken.user);
+
+    return {
+      token: this.getJwtToken({ id: storedToken.user.id }),
+      refreshToken: newRefreshToken,
+    };
+  }
+
+  async logout(dto: RefreshTokenDto) {
+    const tokenHash = this.hashToken(dto.refreshToken);
+    await this.refreshTokenRepository.update({ tokenHash }, { revoked: true });
+    return { ok: true };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.userRepository.findOne({ where: { email: dto.email } });
+
+    // No revelamos si el email existe o no — evita enumeración de usuarios
+    if (!user) return { ok: true };
+
+    const code = crypto.randomInt(100000, 999999).toString();
+    user.resetPasswordCode = code;
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await this.userRepository.save(user);
+
+    await this.mailService.sendPasswordResetCode(user.email, code);
+
+    return { ok: true };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const user = await this.userRepository.findOne({ where: { email: dto.email } });
+
+    if (
+      !user ||
+      !user.resetPasswordCode ||
+      user.resetPasswordCode !== dto.code ||
+      !user.resetPasswordExpires ||
+      user.resetPasswordExpires < new Date()
+    ) {
+      throw new BadRequestException('Código inválido o expirado');
+    }
+
+    user.password = bcrypt.hashSync(dto.newPassword, 10);
+    user.resetPasswordCode = null;
+    user.resetPasswordExpires = null;
+    await this.userRepository.save(user);
+
+    // Por seguridad, invalido todas las sesiones activas tras un cambio de contraseña
+    await this.refreshTokenRepository.update({ user: { id: user.id } }, { revoked: true });
+
+    return { ok: true };
+  }
+
   getProfile(user: User) {
-    const { password, ...profile } = user as any;
-    return profile;
+    return this.sanitizeUser(user);
   }
 
   async updateProfile(user: User, data: { name?: string; lastname?: string }) {
     await this.userRepository.update({ id: user.id }, data);
     const updated = await this.userRepository.findOneBy({ id: user.id });
-    const { password, ...profile } = updated as any;
-    return profile;
+    return this.sanitizeUser(updated as User);
+  }
+
+  async findAllUsers() {
+    const users = await this.userRepository.find();
+    return users.map((user) => this.sanitizeUser(user));
+  }
+
+  async findRecentUsers(limit: number) {
+    const users = await this.userRepository.find({
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
+    return users.map((user) => this.sanitizeUser(user));
+  }
+
+  async updateUserStatus(id: string, isActive: boolean) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    user.isActive = isActive;
+    await this.userRepository.save(user);
+
+    if (!isActive) {
+      // Si se desactiva, se cierran todas sus sesiones activas
+      await this.refreshTokenRepository.update({ user: { id } }, { revoked: true });
+    }
+
+    return this.sanitizeUser(user);
+  }
+
+  async updateUserRoles(id: string, roles: string[]) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    user.roles = roles;
+    await this.userRepository.save(user);
+
+    return this.sanitizeUser(user);
+  }
+
+  //metodo para no retornar datos sensibles del usuarios como las contraseñas o los códigos de reseteo de contraseña
+  private sanitizeUser(user: User) {
+    const { password, resetPasswordCode, resetPasswordExpires, ...safeUser } = user;
+    return safeUser;
+  }
+
+  private async generateRefreshToken(user: User): Promise<string> {
+    const plainToken = crypto.randomBytes(40).toString('hex');
+
+    const refreshToken = this.refreshTokenRepository.create({
+      user,
+      tokenHash: this.hashToken(plainToken),
+      expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000),
+    });
+    await this.refreshTokenRepository.save(refreshToken);
+
+    return plainToken;
+  }
+
+  private hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
   }
 
   private getJwtToken(payload: JwtPayload) {

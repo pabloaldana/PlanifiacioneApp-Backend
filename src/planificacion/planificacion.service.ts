@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreatePlanificacionDto } from './dto/create-planificacion.dto';
 import { UpdatePlanificacionDto } from './dto/update-planificacion.dto';
 import { FilesService } from 'src/files/files.service';
+import { CompraService } from 'src/compra/compra.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Planificacion } from './entities/planificacion.entity';
 import { Repository } from 'typeorm';
@@ -12,7 +13,8 @@ export class PlanificacionService {
   constructor(
     @InjectRepository(Planificacion)
     private readonly planifiacionRepository: Repository<Planificacion>,
-    private readonly fileService: FilesService
+    private readonly fileService: FilesService,
+    private readonly compraService: CompraService,
   ) { }
 
 
@@ -88,7 +90,18 @@ export class PlanificacionService {
     return planificacion;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} planificacion`;
+  async remove(id: number) {
+    const planificacion = await this.findOne(id);
+
+    const tieneCompras = await this.compraService.hasPurchases(id);
+
+    if (tieneCompras) {
+      planificacion.is_active = false;
+      await this.planifiacionRepository.save(planificacion);
+      return { message: 'Planificación con compras asociadas — se desactivó en lugar de eliminarse', is_active: false };
+    }
+
+    await this.planifiacionRepository.remove(planificacion);
+    return { message: 'Planificación eliminada' };
   }
 }

@@ -4,21 +4,25 @@ import { AuthController } from './auth.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/auth.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.stratigie';
+import { MailModule } from 'src/mail/mail.module';
 
 
 @Module({
   controllers: [AuthController],
-  
+
   providers: [AuthService,JwtStrategy],
     imports:[
     ConfigModule,
 
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, RefreshToken]),
 
     PassportModule.register({defaultStrategy:'jwt'}),
+
+    MailModule,
 
     JwtModule.registerAsync({
       imports:[ConfigModule],
@@ -27,7 +31,7 @@ import { JwtStrategy } from './strategies/jwt.stratigie';
         return {
           secret:configService.get('JWT_SECRET'),
           signOptions:{
-            expiresIn: '2h'
+            expiresIn: '15m'
           }
         }
       }

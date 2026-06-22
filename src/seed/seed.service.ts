@@ -49,6 +49,20 @@ export class SeedService {
     const adminUser = users.find(u => u.email === 'admin@example.com');
     if (!adminUser) return true;
 
+    // 2.b Escalonar createdAt — todos se insertaron casi al mismo tiempo en el paso 1,
+    // esto simula registros distribuidos en el tiempo para que "últimos registrados" tenga sentido
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    await Promise.all(
+      USERS_SEED.map((seedUser, index) => {
+        const user = users.find(u => u.email === seedUser.email);
+        if (!user) return Promise.resolve(null);
+        const daysAgo = (USERS_SEED.length - index) * 3;
+        user.createdAt = new Date(now - daysAgo * ONE_DAY_MS);
+        return this.userRepository.save(user);
+      }),
+    );
+
     // 3. Crear planificaciones mapeando materia y grado por nombre/numero
     const planificaciones = await Promise.all(
       PLANIFICACIONES_SEED.map(plan => {

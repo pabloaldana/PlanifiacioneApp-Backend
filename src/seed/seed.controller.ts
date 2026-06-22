@@ -6,11 +6,11 @@ import { ValidRoles } from 'src/auth/interfaces';
 
 @Controller('seed')
 export class SeedController {
-  constructor(private readonly seedService: SeedService) {}
+  constructor(private readonly seedService: SeedService) { }
 
   @Get()
-  // @Auth(ValidRoles.superUser)
-  executeSeed(){
+  // @Auth(ValidRoles.superAdmin)
+  executeSeed() {
     return this.seedService.runSeed()
   }
 

@@ -28,4 +28,11 @@ export class CompraController {
   findAllPurchases() {
     return this.compraService.findAllPurchases();
   }
+
+  @Get('/total')
+  @Auth(ValidRoles.superAdmin)
+  async getTotalRevenue() {
+    const total = await this.compraService.getTotalRevenue();
+    return { total };
+  }
 }

@@ -52,6 +52,7 @@ export class PlanificacionController {
 
 
   @Patch(':id')
+  @Auth(ValidRoles.admin)
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: fileFilter,
     limits: { fileSize: 10 * 1024 * 1024 },
@@ -66,10 +67,10 @@ export class PlanificacionController {
     }
     return this.planificacionService.update(id, updatePlanificacionDto);
   }
-}
 
-//aca tengo q verificar que la planifiacion a eliminar no tenga compras asociadas
-//   @Delete(':id')
-//   remove(@Param('id') id: string) {
-//     return this.planificacionService.remove(+id);
-//   }
+  @Delete(':id')
+  @Auth(ValidRoles.admin)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.planificacionService.remove(id);
+  }
+}

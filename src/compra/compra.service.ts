@@ -57,4 +57,21 @@ export class CompraService {
     });
     return !!compra;
   }
+
+  async hasPurchases(planificacionId: number): Promise<boolean> {
+    const compra = await this.compraRepository.findOne({
+      where: { planificacion: { id: planificacionId } },
+    });
+    return !!compra;
+  }
+
+  async getTotalRevenue(): Promise<number> {
+    const { total } = await this.compraRepository
+      .createQueryBuilder('compra')
+      .select('COALESCE(SUM(compra.priceAtPurchase), 0)', 'total')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .getRawOne();
+
+    return Number(total);
+  }
 }

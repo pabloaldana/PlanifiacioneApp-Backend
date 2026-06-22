@@ -91,6 +91,30 @@ export const inicialData = {
       isActive: false,
       roles: ['user']
     },
+    {
+      email: 'ana.martinez@example.com',
+      password: '123Abc',
+      name: 'Ana',
+      lastname: 'Martínez',
+      isActive: true,
+      roles: ['user']
+    },
+    {
+      email: 'diego.lopez@example.com',
+      password: '123Abc',
+      name: 'Diego',
+      lastname: 'López',
+      isActive: true,
+      roles: ['user']
+    },
+    {
+      email: 'sofia.diaz@example.com',
+      password: '123Abc',
+      name: 'Sofía',
+      lastname: 'Díaz',
+      isActive: true,
+      roles: ['user']
+    },
   ],
 
   /* ======================================================
