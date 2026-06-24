@@ -43,6 +43,14 @@ export class PlanificacionService {
     return planificaciones;
   }
 
+  async count(): Promise<number> {
+    return this.planifiacionRepository.count();
+  }
+
+  async countByUser(userId: string): Promise<number> {
+    return this.planifiacionRepository.count({ where: { user: { id: userId } } });
+  }
+
   async findOne(id: number) {
     const planificacion = await this.planifiacionRepository.findOneBy({ id });
     if (!planificacion) throw new NotFoundException(`Planificacion with id ${id} not found`);

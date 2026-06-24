@@ -7,7 +7,8 @@
       "Bash(Select-Object Name)",
       "mcp__plugin_engram_engram__mem_save",
       "Bash(npx tsc *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "mcp__plugin_engram_engram__mem_search"
     ]
   }
 }

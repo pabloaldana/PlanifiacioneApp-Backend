@@ -74,4 +74,78 @@ export class CompraService {
 
     return Number(total);
   }
+
+  async getMonthlyRevenue(): Promise<number> {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const { total } = await this.compraRepository
+      .createQueryBuilder('compra')
+      .select('COALESCE(SUM(compra.priceAtPurchase), 0)', 'total')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('compra.createdAt >= :startOfMonth', { startOfMonth })
+      .getRawOne();
+
+    return Number(total);
+  }
+
+  async getRevenueBySeller(sellerId: string): Promise<number> {
+    const { total } = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.user', 'seller')
+      .select('COALESCE(SUM(compra.priceAtPurchase), 0)', 'total')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('seller.id = :sellerId', { sellerId })
+      .getRawOne();
+
+    return Number(total);
+  }
+
+  async getTotalSpentByUser(userId: string): Promise<number> {
+    const { total } = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.user', 'user')
+      .select('COALESCE(SUM(compra.priceAtPurchase), 0)', 'total')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('user.id = :userId', { userId })
+      .getRawOne();
+
+    return Number(total);
+  }
+
+  async getTopSellingByUser(sellerId: string): Promise<{ title: string; ventas: string }[]> {
+    const rows = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.user', 'seller')
+      .select('planificacion.title', 'title')
+      .addSelect('COUNT(compra.id)', 'count')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('seller.id = :sellerId', { sellerId })
+      .groupBy('planificacion.id')
+      .addGroupBy('planificacion.title')
+      .orderBy('count', 'DESC')
+      .limit(4)
+      .getRawMany();
+
+    return rows.map((row) => ({
+      title: row.title,
+      ventas: `${row.count} ventas`,
+    }));
+  }
+
+  async getRecentSalesByUser(sellerId: string): Promise<Compra[]> {
+    const sales = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoinAndSelect('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.user', 'seller')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('seller.id = :sellerId', { sellerId })
+      .orderBy('compra.createdAt', 'DESC')
+      .limit(5)
+      .getMany();
+
+    return sales;
+  }
 }

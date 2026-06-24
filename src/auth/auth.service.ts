@@ -167,6 +167,14 @@ export class AuthService {
     return users.map((user) => this.sanitizeUser(user));
   }
 
+  async countUsers(): Promise<number> {
+    return this.userRepository.count();
+  }
+
+  async countActiveUsers(): Promise<number> {
+    return this.userRepository.count({ where: { isActive: true } });
+  }
+
   async updateUserStatus(id: string, isActive: boolean) {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) throw new NotFoundException('Usuario no encontrado');

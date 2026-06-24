@@ -9,7 +9,7 @@ import { PlanificacionModule } from './planificacion/planificacion.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { ComentarioModule } from './comentario/comentario.module';
+
 
 import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
@@ -17,6 +17,7 @@ import { CompraModule } from './compra/compra.module';
 import { SeedModule } from './seed/seed.module';
 import { PaymentsModule } from './payment/payment.module';
 import { CartModule } from './cart/cart.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 
 
@@ -35,7 +36,7 @@ import { CartModule } from './cart/cart.module';
       synchronize: process.env.NODE_ENV !== 'production',
     }),
 
-    MateriaModule, GradoModule, PlanificacionModule, ComentarioModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule, CartModule,],
+    MateriaModule, GradoModule, PlanificacionModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule, CartModule, DashboardModule,],
   controllers: [],
   providers: [],
 })
