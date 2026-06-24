@@ -78,6 +78,13 @@ export class PaymentService {
     };
   }
 
+  buildFrontendRedirectUrl(target: 'success' | 'failure', requestUrl: string): string {
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+    const queryString = requestUrl.split('?')[1] ?? '';
+
+    return `${frontendUrl}/checkout/${target}${queryString ? `?${queryString}` : ''}`;
+  }
+
   async processWebhook(body: any, signature: string, requestId: string) {
     this.logger.log(`Webhook recibido — type: ${body?.type}, action: ${body?.action}`);
 

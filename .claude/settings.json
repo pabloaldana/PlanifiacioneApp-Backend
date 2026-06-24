@@ -8,7 +8,13 @@
       "mcp__plugin_engram_engram__mem_save",
       "Bash(npx tsc *)",
       "Bash(npm install *)",
-      "mcp__plugin_engram_engram__mem_search"
+      "mcp__plugin_engram_engram__mem_search",
+      "Bash(curl -s http://127.0.0.1:4040/api/tunnels)",
+      "Bash(ngrok config *)",
+      "PowerShell(Get-Command ngrok -All -ErrorAction SilentlyContinue | Select-Object Source; Get-ChildItem -Path \"$env:LOCALAPPDATA\\\\ngrok\",\"$env:APPDATA\\\\ngrok\" -ErrorAction SilentlyContinue)",
+      "Bash(find /c/Users/Pablo/AppData -iname \"ngrok.yml\" 2>/dev/null)",
+      "Read(//c/Users/Pablo/AppData/**)",
+      "Bash(git check-ignore *)"
     ]
   }
 }

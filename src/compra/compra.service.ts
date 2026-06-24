@@ -14,9 +14,14 @@ export class CompraService {
   ) { }
 
   async create(createCompraDto: CreateCompraDto) {
-    const newCompra = this.compraRepository.create(createCompraDto)
-    await this.compraRepository.save(newCompra)
-    return newCompra
+    const { userId, planificacionId, ...rest } = createCompraDto;
+    const newCompra = this.compraRepository.create({
+      ...rest,
+      user: { id: userId },
+      planificacion: { id: planificacionId },
+    });
+    await this.compraRepository.save(newCompra);
+    return newCompra;
   }
 
   async findMyPurchases(user: User) {
