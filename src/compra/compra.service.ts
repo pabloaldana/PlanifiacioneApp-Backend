@@ -160,4 +160,139 @@ export class CompraService {
 
     return sales;
   }
+
+  async getTotalSalesCountBySeller(sellerId: string): Promise<number> {
+    const { count } = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.user', 'seller')
+      .select('COUNT(compra.id)', 'count')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('seller.id = :sellerId', { sellerId })
+      .getRawOne();
+
+    return Number(count);
+  }
+
+  async getBestSellingByUser(sellerId: string): Promise<{ title: string; ventas: number } | null> {
+    const row = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.user', 'seller')
+      .select('planificacion.title', 'title')
+      .addSelect('COUNT(compra.id)', 'count')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('seller.id = :sellerId', { sellerId })
+      .groupBy('planificacion.id')
+      .addGroupBy('planificacion.title')
+      .orderBy('count', 'DESC')
+      .limit(1)
+      .getRawOne();
+
+    if (!row) return null;
+
+    return {
+      title: row.title,
+      ventas: Number(row.count),
+    };
+  }
+
+  async getMonthlyRevenueBySellerForYear(
+    sellerId: string,
+    year: number,
+  ): Promise<{ month: number; monto: number }[]> {
+    const rows = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.user', 'seller')
+      .select('EXTRACT(MONTH FROM compra.createdAt)', 'month')
+      .addSelect('SUM(compra.priceAtPurchase)', 'monto')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('seller.id = :sellerId', { sellerId })
+      .andWhere('EXTRACT(YEAR FROM compra.createdAt) = :year', { year })
+      .groupBy('month')
+      .getRawMany();
+
+    return rows.map((row) => ({
+      month: Number(row.month),
+      monto: Number(row.monto),
+    }));
+  }
+
+  async getMonthlySalesCountBySellerForYear(
+    sellerId: string,
+    year: number,
+  ): Promise<{ month: number; ventas: number }[]> {
+    const rows = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.user', 'seller')
+      .select('EXTRACT(MONTH FROM compra.createdAt)', 'month')
+      .addSelect('COUNT(compra.id)', 'count')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('seller.id = :sellerId', { sellerId })
+      .andWhere('EXTRACT(YEAR FROM compra.createdAt) = :year', { year })
+      .groupBy('month')
+      .getRawMany();
+
+    return rows.map((row) => ({
+      month: Number(row.month),
+      ventas: Number(row.count),
+    }));
+  }
+
+  async getSalesBySubjectForSeller(
+    sellerId: string,
+  ): Promise<{ materia: string; ventas: number }[]> {
+    const rows = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.user', 'seller')
+      .innerJoin('planificacion.materia', 'materia')
+      .select('materia.name', 'materia')
+      .addSelect('COUNT(compra.id)', 'count')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('seller.id = :sellerId', { sellerId })
+      .groupBy('materia.id')
+      .addGroupBy('materia.name')
+      .orderBy('count', 'DESC')
+      .getRawMany();
+
+    return rows.map((row) => ({
+      materia: row.materia,
+      ventas: Number(row.count),
+    }));
+  }
+
+  async getSoldPlanificacionesBySeller(sellerId: string): Promise<
+    { title: string; materia: string; grado: string; ventas: number; ingresos: number }[]
+  > {
+    const rows = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.user', 'seller')
+      .innerJoin('planificacion.materia', 'materia')
+      .innerJoin('planificacion.grado', 'grado')
+      .select('planificacion.title', 'title')
+      .addSelect('materia.name', 'materia')
+      .addSelect('grado.name', 'grado')
+      .addSelect('COUNT(compra.id)', 'count')
+      .addSelect('SUM(compra.priceAtPurchase)', 'ingresos')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('seller.id = :sellerId', { sellerId })
+      .groupBy('planificacion.id')
+      .addGroupBy('planificacion.title')
+      .addGroupBy('materia.name')
+      .addGroupBy('grado.name')
+      .orderBy('count', 'DESC')
+      .getRawMany();
+
+    return rows.map((row) => ({
+      title: row.title,
+      materia: row.materia,
+      grado: row.grado,
+      ventas: Number(row.count),
+      ingresos: Number(row.ingresos),
+    }));
+  }
 }

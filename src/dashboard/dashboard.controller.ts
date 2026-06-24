@@ -20,6 +20,12 @@ export class DashboardController {
     return this.dashboardService.getTeacherSummary(userId);
   }
 
+  @Get('admin/estadisticas')
+  @Auth(ValidRoles.admin)
+  getTeacherStatistics(@GetUser('id') userId: string) {
+    return this.dashboardService.getTeacherStatistics(userId);
+  }
+
   @Get('user')
   @Auth(ValidRoles.user)
   getBuyerSummary(@GetUser() user: User) {
