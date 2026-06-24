@@ -17,8 +17,8 @@ export class User {
     )
     email!: string
 
-    @Column('text')
-    password!: string
+    @Column('text', { nullable: true })
+    password!: string | null
 
     @Column('text')
     name!: string

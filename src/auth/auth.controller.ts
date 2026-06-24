@@ -9,6 +9,7 @@ import {
   UpdateProfileDto,
   UpdateUserStatusDto,
   UpdateUserRolesDto,
+  GoogleLoginDto,
 } from './dto/index';
 import { Auth, GetUser } from './decorators';
 import { ValidRoles } from './interfaces';
@@ -26,6 +27,11 @@ export class AuthController {
   @Post('login')
   login(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);
+  }
+
+  @Post('google')
+  googleLogin(@Body() googleLoginDto: GoogleLoginDto) {
+    return this.authService.googleLogin(googleLoginDto.credential);
   }
 
   @Post('refresh')

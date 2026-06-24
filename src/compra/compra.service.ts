@@ -47,6 +47,13 @@ export class CompraService {
     );
   }
 
+  async findOneWithUser(compraId: string): Promise<Compra | null> {
+    return this.compraRepository.findOne({
+      where: { id: compraId },
+      relations: ['user'],
+    });
+  }
+
   async hasPurchased(userId: string, planificacionId: number): Promise<boolean> {
     const compra = await this.compraRepository.findOne({
       where: {

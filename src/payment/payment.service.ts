@@ -71,9 +71,6 @@ export class PaymentService {
       },
     });
 
-    // 4. Vaciar el carrito — el usuario ya inició el proceso de pago
-    await this.cartService.clearCart(user);
-
     return {
       compraIds: compras.map((c) => c.id),
       preferenceId: result.id,
@@ -119,6 +116,11 @@ export class PaymentService {
           ),
         );
         this.logger.log(`${compraIds.length} compra(s) marcadas como paid (transactionId: ${paymentId})`);
+
+        const compra = await this.compraService.findOneWithUser(compraIds[0]);
+        if (compra?.user) {
+          await this.cartService.clearCart(compra.user);
+        }
       } else if (payment.status === 'rejected' || payment.status === 'cancelled') {
         await Promise.all(
           compraIds.map((compraId) =>

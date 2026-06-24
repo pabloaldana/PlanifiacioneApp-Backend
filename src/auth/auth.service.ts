@@ -9,7 +9,9 @@ import * as bcrypt from 'bcrypt'
 import * as crypto from 'crypto'
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './interfaces';
+import { ConfigService } from '@nestjs/config';
+import { OAuth2Client } from 'google-auth-library';
+import { JwtPayload, ValidRoles } from './interfaces';
 import { MailService } from 'src/mail/mail.service';
 
 const REFRESH_TOKEN_TTL_DAYS = 30;
@@ -26,6 +28,7 @@ export class AuthService {
 
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) { }
 
   async create(createUserDto: CreateUserDto) {
@@ -40,13 +43,7 @@ export class AuthService {
 
       await this.userRepository.save(newUser);
 
-      const refreshToken = await this.generateRefreshToken(newUser);
-
-      return {
-        ...this.sanitizeUser(newUser),
-        token: this.getJwtToken({ id: newUser.id }),
-        refreshToken,
-      }
+      return await this.buildAuthResponse(newUser);
 
     } catch (error) {
       this.handleDBErrors(error);
@@ -65,15 +62,45 @@ export class AuthService {
 
     if (!user.isActive) throw new UnauthorizedException('User is not active');
 
-    if (!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('Credentials are not valid');
+    if (!user.password || !bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('Credentials are not valid');
 
-    const refreshToken = await this.generateRefreshToken(user);
+    return await this.buildAuthResponse(user);
+  }
 
-    return {
-      ...this.sanitizeUser(user),
-      token: this.getJwtToken({ id: user.id }),
-      refreshToken,
+  async googleLogin(credential: string) {
+    const client = new OAuth2Client();
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: this.configService.get('GOOGLE_CLIENT_ID'),
+    });
+
+    const payload = ticket.getPayload();
+
+    if (!payload || !payload.email_verified || !payload.email) throw new UnauthorizedException('Credentials are not valid');
+
+    const { email, given_name, family_name, name } = payload;
+
+    let user = await this.userRepository.findOne({
+      where: { email },
+    })
+
+    if (!user) {
+      user = this.userRepository.create({
+        email,
+        password: null,
+        name: given_name ?? name ?? '',
+        lastname: family_name ?? '',
+        roles: [ValidRoles.user],
+        isActive: true,
+      });
+
+      await this.userRepository.save(user);
     }
+
+    if (!user.isActive) throw new UnauthorizedException('User is not active');
+
+    return await this.buildAuthResponse(user);
   }
 
   async refreshTokens(dto: RefreshTokenDto) {
@@ -204,6 +231,16 @@ export class AuthService {
   private sanitizeUser(user: User) {
     const { password, resetPasswordCode, resetPasswordExpires, ...safeUser } = user;
     return safeUser;
+  }
+
+  private async buildAuthResponse(user: User) {
+    const refreshToken = await this.generateRefreshToken(user);
+
+    return {
+      ...this.sanitizeUser(user),
+      token: this.getJwtToken({ id: user.id }),
+      refreshToken,
+    }
   }
 
   private async generateRefreshToken(user: User): Promise<string> {
