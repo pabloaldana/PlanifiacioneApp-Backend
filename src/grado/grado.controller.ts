@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
 import { GradoService } from './grado.service';
 import { CreateGradoDto } from './dto/create-grado.dto';
 import { UpdateGradoDto } from './dto/update-grado.dto';
@@ -34,11 +34,5 @@ export class GradoController {
   @Auth(ValidRoles.superAdmin)
   update(@Param('id') id: string, @Body() updateGradoDto: UpdateGradoDto) {
     return this.gradoService.update(+id, updateGradoDto);
-  }
-
-  @Delete(':id')
-  @Auth(ValidRoles.superAdmin)
-  remove(@Param('id') id: number) {
-    return this.gradoService.remove(+id);
   }
 }

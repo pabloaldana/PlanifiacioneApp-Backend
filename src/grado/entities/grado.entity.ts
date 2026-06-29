@@ -1,4 +1,3 @@
-// import { Planificacion } from "src/planificacion/entities/planificacion.entity";
 import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Planificacion } from "../../planificacion/entities/planificacion.entity";
 

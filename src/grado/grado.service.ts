@@ -75,15 +75,6 @@ export class GradoService {
     return grado;
   }
 
-  async remove(id: number) {
-    const grado = await this.gradoRepository.findBy({ id })
-
-    if (grado.length === 0) throw new NotFoundException(`Grado with id ${id} not found`)
-
-    await this.gradoRepository.remove(grado)
-
-  }
-
   private handleDBExceptions(error: any) {
     if (error.code === '23505') {
       //!aca me muestra el error en postman
