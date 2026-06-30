@@ -73,4 +73,14 @@ export class PlanificacionController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.planificacionService.remove(id);
   }
+
+  @Get(':id/download')
+  @Auth()
+  getDownloadUrl(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ) {
+    return this.planificacionService.getDownloadUrl(id, user);
+  }
+
 }

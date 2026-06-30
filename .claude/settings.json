@@ -14,7 +14,17 @@
       "PowerShell(Get-Command ngrok -All -ErrorAction SilentlyContinue | Select-Object Source; Get-ChildItem -Path \"$env:LOCALAPPDATA\\\\ngrok\",\"$env:APPDATA\\\\ngrok\" -ErrorAction SilentlyContinue)",
       "Bash(find /c/Users/Pablo/AppData -iname \"ngrok.yml\" 2>/dev/null)",
       "Read(//c/Users/Pablo/AppData/**)",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "PowerShell(Get-Content -Encoding Byte -TotalCount 100 \"c:\\\\Users\\\\Pablo\\\\Documents\\\\Programacion\\\\planificaciones-educativas\\\\planificaciones-backend\\\\src\\\\planificacion\\\\planificacion.service.ts\" | ForEach-Object { '{0:X2}' -f $_ } | Out-String)",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(mkdir -p \"c:\\\\Users\\\\Pablo\\\\Documents\\\\Programacion\\\\planificaciones-educativas\\\\planificaciones-backend\\\\src\\\\planificacion-imagen\\\\entities\")",
+      "Bash(rm \"c:\\\\Users\\\\Pablo\\\\Documents\\\\Programacion\\\\planificaciones-educativas\\\\planificaciones-backend\\\\src\\\\planificacion\\\\entities\\\\planificacion-imagen.entity.ts\")",
+      "Bash(powershell -Command \"Get-Content -Encoding Byte -TotalCount 300 'src\\\\planificacion\\\\entities\\\\planificacion.entity.ts' | Format-Hex | Select-Object -First 5\")",
+      "Bash(cd \"c:/Users/Pablo/Documents/Programacion/planificaciones-educativas/planificaciones-backend\" && rm -f tsconfig.build.tsbuildinfo && npx tsc --noEmit 2>&1)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Pablo\\Documents\\Programacion\\planificaciones-educativas\\planificaciones-backend\\src\\planificacion-imagen",
+      "c:\\Users\\Pablo\\Documents\\Programacion\\planificaciones-educativas\\planificaciones-backend\\src\\planificacion\\entities"
     ]
   }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePlanificacionDto } from './dto/create-planificacion.dto';
 import { UpdatePlanificacionDto } from './dto/update-planificacion.dto';
 import { FilesService } from 'src/files/files.service';
@@ -6,6 +6,8 @@ import { CompraService } from 'src/compra/compra.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Planificacion } from './entities/planificacion.entity';
 import { Repository } from 'typeorm';
+import { User } from 'src/auth/entities/auth.entity';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @Injectable()
 export class PlanificacionService {
@@ -20,6 +22,12 @@ export class PlanificacionService {
 
   async create(createPlanificacionDto: CreatePlanificacionDto, url: string, public_id: string, userId) {
 
+    const exists = await this.planifiacionRepository.findOne({
+      where: { title: createPlanificacionDto.title }
+    });
+
+    if (exists) throw new BadRequestException('Ya existe una planificación con ese título');
+
     const newPlanificacion = this.planifiacionRepository.create({
       title: createPlanificacionDto.title,
       description: createPlanificacionDto.description,
@@ -29,8 +37,6 @@ export class PlanificacionService {
       materia: { id: createPlanificacionDto.materiaId },   // RELACIÓN
       grado: { id: createPlanificacionDto.gradoId },       // RELACIÓN
       user: { id: userId } //las relaciones se hacen asi
-      //!COMO ERROR LO ESTABA HACIENDO id_user_creador EL NOMBRE QUE LE PUSE EN LA RELACION PERO ESTA MAL ES COMO ESTA ARRIBA
-      // creador
     });
 
     await this.planifiacionRepository.save(newPlanificacion)
@@ -38,9 +44,20 @@ export class PlanificacionService {
   }
 
   async findAll() {
-    const planificaciones = await this.planifiacionRepository.find()
-
-    return planificaciones;
+    return await this.planifiacionRepository
+      .createQueryBuilder('planificacion')
+      .select([
+        'planificacion.id',
+        'planificacion.title',
+        'planificacion.description',
+        'planificacion.price',
+        'planificacion.is_active',
+        'planificacion.created_at',
+        'planificacion.updated_at',
+      ])
+      .leftJoinAndSelect('planificacion.materia', 'materia')
+      .leftJoinAndSelect('planificacion.grado', 'grado')
+      .getMany();
   }
 
   async count(): Promise<number> {
@@ -52,9 +69,39 @@ export class PlanificacionService {
   }
 
   async findOne(id: number) {
-    const planificacion = await this.planifiacionRepository.findOneBy({ id });
+    const planificacion = await this.planifiacionRepository
+      .createQueryBuilder('planificacion')
+      .select([
+        'planificacion.id',
+        'planificacion.title',
+        'planificacion.description',
+        'planificacion.price',
+        'planificacion.is_active',
+        'planificacion.created_at',
+        'planificacion.updated_at',
+      ])
+      .leftJoinAndSelect('planificacion.materia', 'materia')
+      .leftJoinAndSelect('planificacion.grado', 'grado')
+      .where('planificacion.id = :id', { id })
+      .getOne();
     if (!planificacion) throw new NotFoundException(`Planificacion with id ${id} not found`);
     return planificacion;
+  }
+
+  private async findOneInternal(id: number) {
+    const planificacion = await this.planifiacionRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+    if (!planificacion) throw new NotFoundException(`Planificacion with id ${id} not found`);
+    return planificacion;
+  }
+
+  private isOwnerOrSuperAdmin(planificacion: Planificacion, user: User): boolean {
+    const isSuperAdmin = user.roles.includes(ValidRoles.superAdmin);
+    const isOwner = planificacion.user.id === user.id;
+
+    return isSuperAdmin || isOwner;
   }
 
   async update(id: number,
@@ -98,8 +145,31 @@ export class PlanificacionService {
     return planificacion;
   }
 
+  async getDownloadUrl(id: number, user: User) {
+    const planificacion = await this.findOneInternal(id);
+
+    const hasPurchased = await this.compraService.hasPurchased(user.id, id);
+
+    if (!this.isOwnerOrSuperAdmin(planificacion, user) && !hasPurchased) {
+      throw new ForbiddenException('No has comprado esta planificacion');
+    }
+
+    const url = this.fileService.getSignedDownloadUrl(planificacion.public_id);
+    return { url };
+  }
+
+  async assertCanManage(planificacionId: number, user: User): Promise<Planificacion> {
+    const planificacion = await this.findOneInternal(planificacionId);
+
+    if (!this.isOwnerOrSuperAdmin(planificacion, user)) {
+      throw new ForbiddenException('No tenes permisos sobre esta planificacion');
+    }
+
+    return planificacion;
+  }
+
   async remove(id: number) {
-    const planificacion = await this.findOne(id);
+    const planificacion = await this.findOneInternal(id);
 
     const tieneCompras = await this.compraService.hasPurchases(id);
 

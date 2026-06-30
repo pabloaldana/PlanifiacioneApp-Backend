@@ -4,6 +4,7 @@ import { Compra } from "src/compra/entities/compra.entity";
 import { Grado } from "src/grado/entities/grado.entity";
 import { Materia } from "src/materia/entities/materia.entity";
 import { AfterInsert, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { PlanificacionImagen } from "src/planificacion-imagen/entities/planificacion-imagen.entity";
 
 @Entity('planificaciones')
 export class Planificacion {
@@ -60,6 +61,10 @@ export class Planificacion {
     //relacion planifiacion-compra 1:n
     @OneToMany(() => Compra, compra => compra.planificacion)
     compras!: Compra[]
+
+    //relacion planificacion-imagenes 1:n
+    @OneToMany(() => PlanificacionImagen, imagen => imagen.planificacion)
+    imagenes!: PlanificacionImagen[]
 
 
     //! aca va para guardar todo en minuscula

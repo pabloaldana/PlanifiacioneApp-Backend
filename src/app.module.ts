@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { MateriaModule } from './materia/materia.module';
 import { GradoModule } from './grado/grado.module';
 import { PlanificacionModule } from './planificacion/planificacion.module';
+import { PlanificacionImagenModule } from './planificacion-imagen/planificacion-imagen.module';
 
 
 import { ConfigModule } from '@nestjs/config';
@@ -36,7 +37,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
       synchronize: process.env.NODE_ENV !== 'production',
     }),
 
-    MateriaModule, GradoModule, PlanificacionModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule, CartModule, DashboardModule,],
+    MateriaModule, GradoModule, PlanificacionModule, PlanificacionImagenModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule, CartModule, DashboardModule,],
   controllers: [],
   providers: [],
 })
