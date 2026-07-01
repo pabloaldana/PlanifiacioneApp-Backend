@@ -35,6 +35,7 @@ export class GradoService {
           'grado.planificacionesCount',
           'grado.planificacion',
         )
+        .orderBy('grado.numero', 'ASC')
         .getMany();
     } catch (error) {
       this.logger.error(error);

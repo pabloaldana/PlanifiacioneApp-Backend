@@ -57,6 +57,8 @@ export class PlanificacionService {
       ])
       .leftJoinAndSelect('planificacion.materia', 'materia')
       .leftJoinAndSelect('planificacion.grado', 'grado')
+      .leftJoinAndSelect('planificacion.imagenes', 'imagenes')
+      .orderBy('imagenes.orden', 'ASC')
       .getMany();
   }
 
@@ -82,6 +84,8 @@ export class PlanificacionService {
       ])
       .leftJoinAndSelect('planificacion.materia', 'materia')
       .leftJoinAndSelect('planificacion.grado', 'grado')
+      .leftJoinAndSelect('planificacion.imagenes', 'imagenes')
+      .orderBy('imagenes.orden', 'ASC')
       .where('planificacion.id = :id', { id })
       .getOne();
     if (!planificacion) throw new NotFoundException(`Planificacion with id ${id} not found`);

@@ -47,6 +47,12 @@ export class User {
     @Column('timestamp', { nullable: true })
     resetPasswordExpires!: Date | null;
 
+    @Column('text', { nullable: true })
+    avatarUrl!: string | null;
+
+    @Column('text', { nullable: true })
+    avatarPublicId!: string | null;
+
     //!si un usuario comun quiere empezar a vender planificaciones tendria que tener un rol mnas para diferenciarlo de la duena para poder cobrarle interes en las ventas
 
 

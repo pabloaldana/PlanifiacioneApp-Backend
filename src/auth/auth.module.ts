@@ -9,12 +9,17 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.stratigie';
 import { MailModule } from 'src/mail/mail.module';
+import { FilesService } from 'src/files/files.service';
+import { CloudinaryProvider } from 'src/files/helpers/cloudinary.provider';
 
 
 @Module({
   controllers: [AuthController],
 
-  providers: [AuthService,JwtStrategy],
+  // FilesService/CloudinaryProvider se proveen acá directo (no se importa FilesModule)
+  // porque FilesModule ya importa AuthModule (para su guard) — importarlo de vuelta
+  // acá crearía una dependencia circular entre los dos módulos.
+  providers: [AuthService,JwtStrategy, FilesService, CloudinaryProvider],
     imports:[
     ConfigModule,
 

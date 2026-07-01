@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import { JwtPayload, ValidRoles } from './interfaces';
 import { MailService } from 'src/mail/mail.service';
+import { FilesService } from 'src/files/files.service';
 
 const REFRESH_TOKEN_TTL_DAYS = 30;
 
@@ -29,6 +30,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
+    private readonly filesService: FilesService,
   ) { }
 
   async create(createUserDto: CreateUserDto) {
@@ -179,6 +181,21 @@ export class AuthService {
     await this.userRepository.update({ id: user.id }, data);
     const updated = await this.userRepository.findOneBy({ id: user.id });
     return this.sanitizeUser(updated as User);
+  }
+
+  async updateAvatar(user: User, url: string, publicId: string) {
+    const current = await this.userRepository.findOneBy({ id: user.id });
+    if (!current) throw new NotFoundException('Usuario no encontrado');
+
+    if (current.avatarPublicId) {
+      await this.filesService.deleteImage(current.avatarPublicId);
+    }
+
+    current.avatarUrl = url;
+    current.avatarPublicId = publicId;
+    await this.userRepository.save(current);
+
+    return this.sanitizeUser(current);
   }
 
   async findAllUsers() {

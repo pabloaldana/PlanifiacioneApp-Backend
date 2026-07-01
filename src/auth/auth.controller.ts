@@ -1,4 +1,5 @@
-import { Controller, Post, Body, Get, Patch, Param, Query, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, Param, Query, DefaultValuePipe, ParseIntPipe, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth.service';
 import {
   CreateUserDto,
@@ -14,10 +15,15 @@ import {
 import { Auth, GetUser } from './decorators';
 import { ValidRoles } from './interfaces';
 import { User } from './entities/auth.entity';
+import { FilesService } from 'src/files/files.service';
+import { imageFileFilter } from 'src/files/helpers/fileFilter.helper';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly filesService: FilesService,
+  ) {}
 
   @Post('register')
   create(@Body() createUserDto: CreateUserDto) {
@@ -64,6 +70,19 @@ export class AuthController {
   @Auth()
   updateProfile(@GetUser() user: User, @Body() dto: UpdateProfileDto) {
     return this.authService.updateProfile(user, dto);
+  }
+
+  @Post('me/avatar')
+  @Auth()
+  @UseInterceptors(FileInterceptor('file', {
+    fileFilter: imageFileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 },
+  }))
+  async uploadAvatar(@GetUser() user: User, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('La imagen es obligatoria');
+
+    const { url, public_id } = await this.filesService.uploadImage(file);
+    return this.authService.updateAvatar(user, url, public_id);
   }
 
   @Get('users')
