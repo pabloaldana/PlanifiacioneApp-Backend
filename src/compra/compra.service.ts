@@ -264,6 +264,40 @@ export class CompraService {
     }));
   }
 
+  async getTopSelling(limit = 3): Promise<
+    { id: number; title: string; materia: string; grado: string; price: number; ventas: number }[]
+  > {
+    const rows = await this.compraRepository
+      .createQueryBuilder('compra')
+      .innerJoin('compra.planificacion', 'planificacion')
+      .innerJoin('planificacion.materia', 'materia')
+      .innerJoin('planificacion.grado', 'grado')
+      .select('planificacion.id', 'id')
+      .addSelect('planificacion.title', 'title')
+      .addSelect('materia.name', 'materia')
+      .addSelect('grado.name', 'grado')
+      .addSelect('planificacion.price', 'price')
+      .addSelect('COUNT(compra.id)', 'count')
+      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
+      .andWhere('planificacion.is_active = true')
+      .groupBy('planificacion.id')
+      .addGroupBy('planificacion.title')
+      .addGroupBy('materia.name')
+      .addGroupBy('grado.name')
+      .orderBy('count', 'DESC')
+      .limit(limit)
+      .getRawMany();
+
+    return rows.map((row) => ({
+      id: Number(row.id),
+      title: row.title,
+      materia: row.materia,
+      grado: row.grado,
+      price: Number(row.price),
+      ventas: Number(row.count),
+    }));
+  }
+
   async getSoldPlanificacionesBySeller(sellerId: string): Promise<
     { title: string; materia: string; grado: string; ventas: number; ingresos: number }[]
   > {

@@ -14,6 +14,11 @@ export class CompraController {
     return this.compraService.findMyPurchases(user);
   }
 
+  @Get('/mas-vendidas')
+  getTopSelling() {
+    return this.compraService.getTopSelling(3);
+  }
+
   @Get('/tengo/:planificacionId')
   @Auth(ValidRoles.user)
   hasPurchased(
