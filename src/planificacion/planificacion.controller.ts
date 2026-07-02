@@ -7,10 +7,6 @@ import { ValidRoles } from 'src/auth/interfaces';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilter } from 'src/files/helpers/fileFilter.helper';
 import { FilesService } from '../files/files.service';
-
-import { AuthService } from 'src/auth/auth.service';
-
-import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/auth/entities/auth.entity';
 
 @Controller('planificaciones')
@@ -18,8 +14,6 @@ export class PlanificacionController {
   constructor(
     private readonly planificacionService: PlanificacionService,
     private readonly fileService: FilesService,
-    private readonly authService: AuthService,
-    private readonly jwtService: JwtService
   ) { }
 
   @Post()

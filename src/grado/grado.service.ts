@@ -4,7 +4,6 @@ import { UpdateGradoDto } from './dto/update-grado.dto';
 import { Grado } from './entities/grado.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { error } from 'console';
 
 @Injectable()
 export class GradoService {
