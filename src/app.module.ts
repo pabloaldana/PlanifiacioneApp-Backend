@@ -19,6 +19,7 @@ import { SeedModule } from './seed/seed.module';
 import { PaymentsModule } from './payment/payment.module';
 import { CartModule } from './cart/cart.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { FavoritoModule } from './favorito/favorito.module';
 
 
 
@@ -37,7 +38,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
       synchronize: process.env.NODE_ENV !== 'production',
     }),
 
-    MateriaModule, GradoModule, PlanificacionModule, PlanificacionImagenModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule, CartModule, DashboardModule,],
+    MateriaModule, GradoModule, PlanificacionModule, PlanificacionImagenModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule, CartModule, DashboardModule, FavoritoModule,],
   controllers: [],
   providers: [],
 })

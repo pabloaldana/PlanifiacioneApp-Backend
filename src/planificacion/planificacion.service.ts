@@ -43,8 +43,8 @@ export class PlanificacionService {
     return newPlanificacion;
   }
 
-  async findAll() {
-    return await this.planifiacionRepository
+  async findAll(search?: string) {
+    const qb = this.planifiacionRepository
       .createQueryBuilder('planificacion')
       .select([
         'planificacion.id',
@@ -59,7 +59,21 @@ export class PlanificacionService {
       .leftJoinAndSelect('planificacion.grado', 'grado')
       .leftJoinAndSelect('planificacion.imagenes', 'imagenes')
       .orderBy('imagenes.orden', 'ASC')
-      .getMany();
+
+    if (search) {
+      const normalized = search
+        .toLowerCase()
+        .trim()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/\s+/g, ' ')
+      qb.where(
+        'planificacion.title ILIKE :search OR planificacion.description ILIKE :search',
+        { search: `%${normalized}%` },
+      )
+    }
+
+    return qb.getMany();
   }
 
   async count(): Promise<number> {

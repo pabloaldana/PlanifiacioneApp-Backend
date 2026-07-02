@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, ParseIntPipe, Query } from '@nestjs/common';
 import { PlanificacionService } from './planificacion.service';
 import { CreatePlanificacionDto } from './dto/create-planificacion.dto';
 import { UpdatePlanificacionDto } from './dto/update-planificacion.dto';
@@ -41,8 +41,8 @@ export class PlanificacionController {
   }
 
   @Get()
-  findAll() {
-    return this.planificacionService.findAll();
+  findAll(@Query('search') search?: string) {
+    return this.planificacionService.findAll(search);
   }
 
   @Get(':id')
