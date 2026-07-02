@@ -4,6 +4,7 @@ import { UpdateGradoDto } from './dto/update-grado.dto';
 import { Grado } from './entities/grado.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { handleDBException } from 'src/common/helpers/handle-db-error';
 
 @Injectable()
 export class GradoService {
@@ -76,13 +77,7 @@ export class GradoService {
   }
 
   private handleDBExceptions(error: any) {
-    if (error.code === '23505') {
-      //!aca me muestra el error en postman
-      throw new InternalServerErrorException('El grado ya existe');
-    }
-    //!aca me muestra el error en la consola
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error, check server logs');
+    handleDBException(error, this.logger, 'El grado ya existe');
   }
 
 }

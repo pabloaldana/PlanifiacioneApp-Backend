@@ -1,5 +1,6 @@
 import { Planificacion } from "src/planificacion/entities/planificacion.entity";
 import { BeforeInsert, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { normalizeString } from "src/common/utils/normalize-string.util";
 
 
 
@@ -24,13 +25,9 @@ export class Materia {
 
 
     @BeforeInsert()
-    checkName() {
-        this.name = this.name.toLowerCase()
-    }
-
-    @BeforeInsert()
-    checkDescription() {
-        this.description = this.description.toLowerCase()
+    normalizeFields() {
+        if (this.name) this.name = normalizeString(this.name);
+        if (this.description) this.description = normalizeString(this.description);
     }
 
     planificacionesCount?: number;

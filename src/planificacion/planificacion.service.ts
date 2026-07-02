@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { normalizeString } from 'src/common/utils/normalize-string.util';
 import { CreatePlanificacionDto } from './dto/create-planificacion.dto';
 import { UpdatePlanificacionDto } from './dto/update-planificacion.dto';
 import { FilesService } from 'src/files/files.service';
@@ -61,15 +62,9 @@ export class PlanificacionService {
       .orderBy('imagenes.orden', 'ASC')
 
     if (search) {
-      const normalized = search
-        .toLowerCase()
-        .trim()
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .replace(/\s+/g, ' ')
       qb.where(
         'planificacion.title ILIKE :search OR planificacion.description ILIKE :search',
-        { search: `%${normalized}%` },
+        { search: `%${normalizeString(search)}%` },
       )
     }
 

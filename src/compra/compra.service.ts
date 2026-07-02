@@ -101,14 +101,18 @@ export class CompraService {
     return Number(total);
   }
 
-  async getRevenueBySeller(sellerId: string): Promise<number> {
-    const { total } = await this.compraRepository
+  private sellerBaseQuery(sellerId: string) {
+    return this.compraRepository
       .createQueryBuilder('compra')
       .innerJoin('compra.planificacion', 'planificacion')
       .innerJoin('planificacion.user', 'seller')
-      .select('COALESCE(SUM(compra.priceAtPurchase), 0)', 'total')
       .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
-      .andWhere('seller.id = :sellerId', { sellerId })
+      .andWhere('seller.id = :sellerId', { sellerId });
+  }
+
+  async getRevenueBySeller(sellerId: string): Promise<number> {
+    const { total } = await this.sellerBaseQuery(sellerId)
+      .select('COALESCE(SUM(compra.priceAtPurchase), 0)', 'total')
       .getRawOne();
 
     return Number(total);
@@ -127,14 +131,9 @@ export class CompraService {
   }
 
   async getTopSellingByUser(sellerId: string): Promise<{ title: string; ventas: string }[]> {
-    const rows = await this.compraRepository
-      .createQueryBuilder('compra')
-      .innerJoin('compra.planificacion', 'planificacion')
-      .innerJoin('planificacion.user', 'seller')
+    const rows = await this.sellerBaseQuery(sellerId)
       .select('planificacion.title', 'title')
       .addSelect('COUNT(compra.id)', 'count')
-      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
-      .andWhere('seller.id = :sellerId', { sellerId })
       .groupBy('planificacion.id')
       .addGroupBy('planificacion.title')
       .orderBy('count', 'DESC')
@@ -148,41 +147,25 @@ export class CompraService {
   }
 
   async getRecentSalesByUser(sellerId: string): Promise<Compra[]> {
-    const sales = await this.compraRepository
-      .createQueryBuilder('compra')
-      .innerJoinAndSelect('compra.planificacion', 'planificacion')
-      .innerJoin('planificacion.user', 'seller')
-      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
-      .andWhere('seller.id = :sellerId', { sellerId })
+    return this.sellerBaseQuery(sellerId)
+      .addSelect('planificacion')
       .orderBy('compra.createdAt', 'DESC')
       .limit(5)
       .getMany();
-
-    return sales;
   }
 
   async getTotalSalesCountBySeller(sellerId: string): Promise<number> {
-    const { count } = await this.compraRepository
-      .createQueryBuilder('compra')
-      .innerJoin('compra.planificacion', 'planificacion')
-      .innerJoin('planificacion.user', 'seller')
+    const { count } = await this.sellerBaseQuery(sellerId)
       .select('COUNT(compra.id)', 'count')
-      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
-      .andWhere('seller.id = :sellerId', { sellerId })
       .getRawOne();
 
     return Number(count);
   }
 
   async getBestSellingByUser(sellerId: string): Promise<{ title: string; ventas: number } | null> {
-    const row = await this.compraRepository
-      .createQueryBuilder('compra')
-      .innerJoin('compra.planificacion', 'planificacion')
-      .innerJoin('planificacion.user', 'seller')
+    const row = await this.sellerBaseQuery(sellerId)
       .select('planificacion.title', 'title')
       .addSelect('COUNT(compra.id)', 'count')
-      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
-      .andWhere('seller.id = :sellerId', { sellerId })
       .groupBy('planificacion.id')
       .addGroupBy('planificacion.title')
       .orderBy('count', 'DESC')
@@ -201,14 +184,9 @@ export class CompraService {
     sellerId: string,
     year: number,
   ): Promise<{ month: number; monto: number }[]> {
-    const rows = await this.compraRepository
-      .createQueryBuilder('compra')
-      .innerJoin('compra.planificacion', 'planificacion')
-      .innerJoin('planificacion.user', 'seller')
+    const rows = await this.sellerBaseQuery(sellerId)
       .select('EXTRACT(MONTH FROM compra.createdAt)', 'month')
       .addSelect('SUM(compra.priceAtPurchase)', 'monto')
-      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
-      .andWhere('seller.id = :sellerId', { sellerId })
       .andWhere('EXTRACT(YEAR FROM compra.createdAt) = :year', { year })
       .groupBy('month')
       .getRawMany();
@@ -223,14 +201,9 @@ export class CompraService {
     sellerId: string,
     year: number,
   ): Promise<{ month: number; ventas: number }[]> {
-    const rows = await this.compraRepository
-      .createQueryBuilder('compra')
-      .innerJoin('compra.planificacion', 'planificacion')
-      .innerJoin('planificacion.user', 'seller')
+    const rows = await this.sellerBaseQuery(sellerId)
       .select('EXTRACT(MONTH FROM compra.createdAt)', 'month')
       .addSelect('COUNT(compra.id)', 'count')
-      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
-      .andWhere('seller.id = :sellerId', { sellerId })
       .andWhere('EXTRACT(YEAR FROM compra.createdAt) = :year', { year })
       .groupBy('month')
       .getRawMany();
@@ -244,15 +217,10 @@ export class CompraService {
   async getSalesBySubjectForSeller(
     sellerId: string,
   ): Promise<{ materia: string; ventas: number }[]> {
-    const rows = await this.compraRepository
-      .createQueryBuilder('compra')
-      .innerJoin('compra.planificacion', 'planificacion')
-      .innerJoin('planificacion.user', 'seller')
+    const rows = await this.sellerBaseQuery(sellerId)
       .innerJoin('planificacion.materia', 'materia')
       .select('materia.name', 'materia')
       .addSelect('COUNT(compra.id)', 'count')
-      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
-      .andWhere('seller.id = :sellerId', { sellerId })
       .groupBy('materia.id')
       .addGroupBy('materia.name')
       .orderBy('count', 'DESC')
@@ -301,10 +269,7 @@ export class CompraService {
   async getSoldPlanificacionesBySeller(sellerId: string): Promise<
     { title: string; materia: string; grado: string; ventas: number; ingresos: number }[]
   > {
-    const rows = await this.compraRepository
-      .createQueryBuilder('compra')
-      .innerJoin('compra.planificacion', 'planificacion')
-      .innerJoin('planificacion.user', 'seller')
+    const rows = await this.sellerBaseQuery(sellerId)
       .innerJoin('planificacion.materia', 'materia')
       .innerJoin('planificacion.grado', 'grado')
       .select('planificacion.title', 'title')
@@ -312,8 +277,6 @@ export class CompraService {
       .addSelect('grado.name', 'grado')
       .addSelect('COUNT(compra.id)', 'count')
       .addSelect('SUM(compra.priceAtPurchase)', 'ingresos')
-      .where('compra.paymentStatus = :status', { status: PaymentStatus.PAID })
-      .andWhere('seller.id = :sellerId', { sellerId })
       .groupBy('planificacion.id')
       .addGroupBy('planificacion.title')
       .addGroupBy('materia.name')

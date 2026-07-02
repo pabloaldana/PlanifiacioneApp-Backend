@@ -1,5 +1,5 @@
-import { join } from "path";
 import { User } from "src/auth/entities/auth.entity";
+import { normalizeString } from "src/common/utils/normalize-string.util";
 import { Compra } from "src/compra/entities/compra.entity";
 import { Grado } from "src/grado/entities/grado.entity";
 import { Materia } from "src/materia/entities/materia.entity";
@@ -67,25 +67,10 @@ export class Planificacion {
     imagenes!: PlanificacionImagen[]
 
 
-    //! aca va para guardar todo en minuscula
     @BeforeInsert()
     @BeforeUpdate()
     normalizeFields() {
-        if (this.title) {
-            this.title = this.title
-                .toLowerCase()
-                .trim()
-                .normalize("NFD")                   // separa letras de acentos
-                .replace(/[\u0300-\u036f]/g, '')    // elimina los acentos
-                .replace(/\s+/g, ' ');
-        }
-        if (this.description) {
-            this.description = this.description
-                .toLowerCase()
-                .trim()
-                .normalize("NFD")                   // separa letras de acentos
-                .replace(/[\u0300-\u036f]/g, '')    // elimina los acentos
-                .replace(/\s+/g, ' ');
-        }
+        if (this.title) this.title = normalizeString(this.title);
+        if (this.description) this.description = normalizeString(this.description);
     }
 }

@@ -1,5 +1,6 @@
 import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Planificacion } from "../../planificacion/entities/planificacion.entity";
+import { normalizeString } from "src/common/utils/normalize-string.util";
 
 @Entity('grados')
 export class Grado {
@@ -32,14 +33,7 @@ export class Grado {
     @BeforeInsert()
     @BeforeUpdate()
     normalizeFields() {
-        if (this.name) {
-            this.name = this.name
-                .toLowerCase()
-                .trim()
-                .normalize("NFD")                   // separa letras de acentos
-                .replace(/[\u0300-\u036f]/g, '')    // elimina los acentos
-                .replace(/\s+/g, ' ');
-        }
+        if (this.name) this.name = normalizeString(this.name);
     }
 
 

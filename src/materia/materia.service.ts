@@ -4,6 +4,7 @@ import { UpdateMateriaDto } from './dto/update-materia.dto';
 import { Materia } from './entities/materia.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { handleDBException } from 'src/common/helpers/handle-db-error';
 
 @Injectable()
 export class MateriaService {
@@ -64,13 +65,6 @@ export class MateriaService {
   }
 
   private handleDBExceptions(error: any) {
-    if (error.code === '23505') {
-      //!aca me muestra el error en postman
-      throw new InternalServerErrorException('El producto ya existe');
-    }
-    //!aca me muestra el error en la consola
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error, check server logs');
-
+    handleDBException(error, this.logger, 'La materia ya existe');
   }
 }
