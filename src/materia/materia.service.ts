@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateMateriaDto } from './dto/create-materia.dto';
 import { UpdateMateriaDto } from './dto/update-materia.dto';
 import { Materia } from './entities/materia.entity';
@@ -60,8 +60,16 @@ export class MateriaService {
   async remove(id: number) {
     const materia = await this.materiaRepository.findOneBy({ id });
     if (!materia) throw new NotFoundException(`Materia with id ${id} not found`);
-    await this.materiaRepository.remove(materia);
-    return { message: `Materia with id ${id} has been removed` };
+    try {
+      await this.materiaRepository.remove(materia);
+      return { message: `Materia with id ${id} has been removed` };
+    } catch (error: any) {
+      if (error.code === '23503') {
+        throw new BadRequestException('No podés eliminar esta materia porque tiene planificaciones asociadas.');
+      }
+      this.logger.error(error);
+      throw new InternalServerErrorException('Error inesperado al eliminar la materia.');
+    }
   }
 
   private handleDBExceptions(error: any) {

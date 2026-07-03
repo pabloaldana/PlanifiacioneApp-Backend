@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateGradoDto } from './dto/create-grado.dto';
 import { UpdateGradoDto } from './dto/update-grado.dto';
 import { Grado } from './entities/grado.entity';
@@ -74,6 +74,19 @@ export class GradoService {
 
     await this.gradoRepository.save(grado);
     return grado;
+  }
+
+  async remove(id: number) {
+    const grado = await this.findOne(id);
+    try {
+      await this.gradoRepository.remove(grado);
+    } catch (error: any) {
+      if (error.code === '23503') {
+        throw new BadRequestException('No podés eliminar este grado porque tiene planificaciones asociadas.');
+      }
+      this.logger.error(error);
+      throw new InternalServerErrorException('Error inesperado al eliminar el grado.');
+    }
   }
 
   private handleDBExceptions(error: any) {
