@@ -71,14 +71,18 @@ export class PaymentService {
       },
     });
 
-    // 4. Vaciar el carrito — el usuario ya inició el proceso de pago
-    await this.cartService.clearCart(user);
-
     return {
       compraIds: compras.map((c) => c.id),
       preferenceId: result.id,
       init_point: result.init_point,
     };
+  }
+
+  buildFrontendRedirectUrl(target: 'success' | 'failure', requestUrl: string): string {
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+    const queryString = requestUrl.split('?')[1] ?? '';
+
+    return `${frontendUrl}/checkout/${target}${queryString ? `?${queryString}` : ''}`;
   }
 
   async processWebhook(body: any, signature: string, requestId: string) {
@@ -119,6 +123,11 @@ export class PaymentService {
           ),
         );
         this.logger.log(`${compraIds.length} compra(s) marcadas como paid (transactionId: ${paymentId})`);
+
+        const compra = await this.compraService.findOneWithUser(compraIds[0]);
+        if (compra?.user) {
+          await this.cartService.clearCart(compra.user);
+        }
       } else if (payment.status === 'rejected' || payment.status === 'cancelled') {
         await Promise.all(
           compraIds.map((compraId) =>

@@ -11,6 +11,6 @@ export class CreateGradoDto {
 
     @IsInt()
     @Min(1)
-    @Max(7)
+    @Max(9)
     numero!: number;
 }

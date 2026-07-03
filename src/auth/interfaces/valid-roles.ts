@@ -1,5 +1,5 @@
 export enum ValidRoles {
-    admin = 'admin', //administrador de la plataforma
-    superAdmin = 'super-admin', //creadora de planificaciones
-    user = 'user' //compradores 
+    admin = 'admin', //creadora de contenido: carga y gestiona planificaciones
+    superAdmin = 'super-admin', //control total de la plataforma: grados, materias, seed, compras
+    user = 'user' //compradores
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, ParseIntPipe, Query } from '@nestjs/common';
 import { PlanificacionService } from './planificacion.service';
 import { CreatePlanificacionDto } from './dto/create-planificacion.dto';
 import { UpdatePlanificacionDto } from './dto/update-planificacion.dto';
@@ -41,8 +41,8 @@ export class PlanificacionController {
   }
 
   @Get()
-  findAll() {
-    return this.planificacionService.findAll();
+  findAll(@Query('search') search?: string) {
+    return this.planificacionService.findAll(search);
   }
 
   @Get(':id')
@@ -52,6 +52,7 @@ export class PlanificacionController {
 
 
   @Patch(':id')
+  @Auth(ValidRoles.admin)
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: fileFilter,
     limits: { fileSize: 10 * 1024 * 1024 },
@@ -66,10 +67,20 @@ export class PlanificacionController {
     }
     return this.planificacionService.update(id, updatePlanificacionDto);
   }
-}
 
-//aca tengo q verificar que la planifiacion a eliminar no tenga compras asociadas
-//   @Delete(':id')
-//   remove(@Param('id') id: string) {
-//     return this.planificacionService.remove(+id);
-//   }
+  @Delete(':id')
+  @Auth(ValidRoles.admin)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.planificacionService.remove(id);
+  }
+
+  @Get(':id/download')
+  @Auth()
+  getDownloadUrl(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ) {
+    return this.planificacionService.getDownloadUrl(id, user);
+  }
+
+}

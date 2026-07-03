@@ -4,21 +4,30 @@ import { AuthController } from './auth.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/auth.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.stratigie';
+import { MailModule } from 'src/mail/mail.module';
+import { FilesService } from 'src/files/files.service';
+import { CloudinaryProvider } from 'src/files/helpers/cloudinary.provider';
 
 
 @Module({
   controllers: [AuthController],
-  
-  providers: [AuthService,JwtStrategy],
+
+  // FilesService/CloudinaryProvider se proveen acá directo (no se importa FilesModule)
+  // porque FilesModule ya importa AuthModule (para su guard) — importarlo de vuelta
+  // acá crearía una dependencia circular entre los dos módulos.
+  providers: [AuthService,JwtStrategy, FilesService, CloudinaryProvider],
     imports:[
     ConfigModule,
 
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, RefreshToken]),
 
     PassportModule.register({defaultStrategy:'jwt'}),
+
+    MailModule,
 
     JwtModule.registerAsync({
       imports:[ConfigModule],
@@ -27,7 +36,7 @@ import { JwtStrategy } from './strategies/jwt.stratigie';
         return {
           secret:configService.get('JWT_SECRET'),
           signOptions:{
-            expiresIn: '2h'
+            expiresIn: '15m'
           }
         }
       }

@@ -35,6 +35,7 @@ export class GradoService {
           'grado.planificacionesCount',
           'grado.planificacion',
         )
+        .orderBy('grado.numero', 'ASC')
         .getMany();
     } catch (error) {
       this.logger.error(error);
@@ -73,15 +74,6 @@ export class GradoService {
 
     await this.gradoRepository.save(grado);
     return grado;
-  }
-
-  async remove(id: number) {
-    const grado = await this.gradoRepository.findBy({ id })
-
-    if (grado.length === 0) throw new NotFoundException(`Grado with id ${id} not found`)
-
-    await this.gradoRepository.remove(grado)
-
   }
 
   private handleDBExceptions(error: any) {

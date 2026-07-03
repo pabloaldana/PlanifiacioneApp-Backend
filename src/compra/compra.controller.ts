@@ -14,6 +14,11 @@ export class CompraController {
     return this.compraService.findMyPurchases(user);
   }
 
+  @Get('/mas-vendidas')
+  getTopSelling() {
+    return this.compraService.getTopSelling(3);
+  }
+
   @Get('/tengo/:planificacionId')
   @Auth(ValidRoles.user)
   hasPurchased(
@@ -27,5 +32,12 @@ export class CompraController {
   @Auth(ValidRoles.superAdmin)
   findAllPurchases() {
     return this.compraService.findAllPurchases();
+  }
+
+  @Get('/total')
+  @Auth(ValidRoles.superAdmin)
+  async getTotalRevenue() {
+    const total = await this.compraService.getTotalRevenue();
+    return { total };
   }
 }

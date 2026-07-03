@@ -13,11 +13,11 @@ export class FilesService {
       const result = await new Promise<any>((resolve, reject) => {
         const uploadStream = this.cloudinary.uploader.upload_stream(
           {
-            folder: 'PlanificacionesDB',
-            resource_type: 'auto',          // archivos PDF, Excel, etc.
+            folder: 'PlanificacionesDB/Planificaciones',
+            resource_type: 'raw',          // archivos PDF, Excel, etc.
+            type: 'authenticated',
             use_filename: true,
             unique_filename: false,
-            access_mode: 'public',
             filename_override: file.originalname,
             // format: 'pdf'
           },
@@ -28,18 +28,9 @@ export class FilesService {
         );
         uploadStream.end(file.buffer);
       });
-      // URL que abre en navegador (preview)
-      const viewUrl = result.secure_url;
 
-      // URL que fuerza descarga
-      const downloadUrl = this.cloudinary.url(result.public_id, {
-        resource_type: 'raw',
-        transformation: [{ flags: 'attachment' }],  // importante para descarga
-      });
-
-      // Retornamos ambos, el que vamos a guardar en DB es downloadUrl
       return {
-        url: viewUrl,   // <-- este es el que guardas en la DB
+        url: result.secure_url,
         public_id: result.public_id,
       };
 
@@ -53,7 +44,53 @@ export class FilesService {
   }
 
   async deleteFile(public_id: string) {
-    return this.cloudinary.uploader.destroy(public_id);
+    return this.cloudinary.uploader.destroy(public_id, { resource_type: 'raw', type: 'authenticated' });
+  }
+
+  async uploadImage(file: Express.Multer.File) {
+    try {
+      const result = await new Promise<any>((resolve, reject) => {
+        const uploadStream = this.cloudinary.uploader.upload_stream(
+          {
+            folder: 'PlanificacionesDB/ImgPlanificaciones',
+            resource_type: 'image',          // imagenes publicas para el catalogo
+            use_filename: true,
+            unique_filename: false,
+            filename_override: file.originalname,
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          },
+        );
+        uploadStream.end(file.buffer);
+      });
+
+      return {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Error al subir imagen: ${error.message}`);
+      }
+
+      throw new Error("Error al subir imagen");
+    }
+  }
+
+  async deleteImage(public_id: string) {
+    return this.cloudinary.uploader.destroy(public_id, { resource_type: 'image' });
+  }
+
+  getSignedDownloadUrl(public_id: string): string {
+    return this.cloudinary.utils.private_download_url(public_id, 'pdf', {
+      resource_type: 'raw',
+      type: 'authenticated',
+      expires_at: Math.floor(Date.now() / 1000) + 600,
+      attachment: true,
+    });
   }
 }
 
