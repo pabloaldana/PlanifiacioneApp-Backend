@@ -52,10 +52,6 @@ export class Compra {
   @Column({ type: 'varchar', nullable: true })
   transactionId!: string;
 
-  //   // En caso de necesitar registrar algún descuento aplicado
-  //   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  //   discountApplied: number;
-
   // Registro de fechas
   @CreateDateColumn()
   createdAt!: Date;
@@ -63,6 +59,3 @@ export class Compra {
   @UpdateDateColumn()
   updatedAt!: Date;
 }
-
-
-//todo: tiene id_usuario(comprador), id_planifiacion, 

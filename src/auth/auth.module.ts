@@ -45,5 +45,3 @@ import { CloudinaryProvider } from 'src/files/helpers/cloudinary.provider';
   exports:[AuthService,PassportModule,JwtModule,TypeOrmModule]
 })
 export class AuthModule {}
-
-//! SOLAMENTE SE EXPORTA LA CLASE CUANDO QUIERO USAR SERVICIOS EN OTRA CLASE

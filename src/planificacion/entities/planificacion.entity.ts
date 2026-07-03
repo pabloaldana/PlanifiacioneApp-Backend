@@ -43,8 +43,6 @@ export class Planificacion {
     @UpdateDateColumn()
     updated_at!: Date;
 
-    //! FALTA RELACION CON DOCENTE,MATERIA,GRADO, createat y el update
-
     @ManyToOne(() => Materia, materia => materia.planificaciones, { eager: true })
     @JoinColumn({ name: 'materiaId' })
     materia!: Materia;

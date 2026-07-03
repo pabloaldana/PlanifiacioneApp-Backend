@@ -141,7 +141,6 @@ export class PlanificacionService {
       }
     }
 
-    //todo: Actualizar solo los campos enviados, evita tener que hacer if, ya filta los campos con undefined
     const dataToUpdate = Object.fromEntries(
       Object.entries(updatePlanificacionDto).filter(([_, value]) => value !== undefined)
     );
