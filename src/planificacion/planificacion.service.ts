@@ -44,7 +44,7 @@ export class PlanificacionService {
     return newPlanificacion;
   }
 
-  async findAll(search?: string) {
+  async findAll(search?: string, page = 1, limit = 12, materiaIds?: string, gradoIds?: string, sortBy?: string, includeInactive = false) {
     const qb = this.planifiacionRepository
       .createQueryBuilder('planificacion')
       .select([
@@ -59,16 +59,57 @@ export class PlanificacionService {
       .leftJoinAndSelect('planificacion.materia', 'materia')
       .leftJoinAndSelect('planificacion.grado', 'grado')
       .leftJoinAndSelect('planificacion.imagenes', 'imagenes')
-      .orderBy('imagenes.orden', 'ASC')
+      .take(limit)
+      .skip((page - 1) * limit)
 
-    if (search) {
-      qb.where(
-        'planificacion.title ILIKE :search OR planificacion.description ILIKE :search',
-        { search: `%${normalizeString(search)}%` },
-      )
+    const conditions: string[] = []
+    const params: Record<string, any> = {}
+
+    if (!includeInactive) {
+      conditions.push('planificacion.is_active = true')
     }
 
-    return qb.getMany();
+    if (search) {
+      conditions.push('(planificacion.title ILIKE :search OR planificacion.description ILIKE :search)')
+      params.search = `%${normalizeString(search)}%`
+    }
+
+    if (materiaIds) {
+      const ids = materiaIds.split(',').map(Number).filter(n => !isNaN(n))
+      if (ids.length) {
+        conditions.push('materia.id IN (:...materiaIds)')
+        params.materiaIds = ids
+      }
+    }
+
+    if (gradoIds) {
+      const ids = gradoIds.split(',').map(Number).filter(n => !isNaN(n))
+      if (ids.length) {
+        conditions.push('grado.id IN (:...gradoIds)')
+        params.gradoIds = ids
+      }
+    }
+
+    if (conditions.length > 0) {
+      qb.where(conditions.join(' AND '), params)
+    }
+
+    if (sortBy === 'price_asc') {
+      qb.orderBy('planificacion.price', 'ASC').addOrderBy('imagenes.orden', 'ASC')
+    } else if (sortBy === 'price_desc') {
+      qb.orderBy('planificacion.price', 'DESC').addOrderBy('imagenes.orden', 'ASC')
+    } else {
+      qb.orderBy('planificacion.created_at', 'DESC').addOrderBy('imagenes.orden', 'ASC')
+    }
+
+    const [data, total] = await qb.getManyAndCount()
+
+    return {
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    }
   }
 
   async count(): Promise<number> {

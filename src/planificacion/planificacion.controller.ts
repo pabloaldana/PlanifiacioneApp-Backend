@@ -35,8 +35,26 @@ export class PlanificacionController {
   }
 
   @Get()
-  findAll(@Query('search') search?: string) {
-    return this.planificacionService.findAll(search);
+  findAll(
+    @Query('search') search?: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 12,
+    @Query('materiaIds') materiaIds?: string,
+    @Query('gradoIds') gradoIds?: string,
+    @Query('sortBy') sortBy?: string,
+  ) {
+    return this.planificacionService.findAll(search, +page, +limit, materiaIds, gradoIds, sortBy);
+  }
+
+  @Get('admin')
+  @Auth(ValidRoles.admin, ValidRoles.superAdmin)
+  findAllAdmin(
+    @Query('search') search?: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 1000,
+    @Query('sortBy') sortBy?: string,
+  ) {
+    return this.planificacionService.findAll(search, +page, +limit, undefined, undefined, sortBy, true);
   }
 
   @Get(':id')
