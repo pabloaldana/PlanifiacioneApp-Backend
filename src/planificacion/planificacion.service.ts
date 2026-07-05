@@ -21,7 +21,7 @@ export class PlanificacionService {
   ) { }
 
 
-  async create(createPlanificacionDto: CreatePlanificacionDto, url: string, public_id: string, userId) {
+  async create(createPlanificacionDto: CreatePlanificacionDto, url: string, public_id: string, file_format: string, userId) {
 
     const exists = await this.planifiacionRepository.findOne({
       where: { title: createPlanificacionDto.title }
@@ -35,9 +35,10 @@ export class PlanificacionService {
       price: createPlanificacionDto.price,
       url,
       public_id,
-      materia: { id: createPlanificacionDto.materiaId },   // RELACIÓN
-      grado: { id: createPlanificacionDto.gradoId },       // RELACIÓN
-      user: { id: userId } //las relaciones se hacen asi
+      file_format,
+      materia: { id: createPlanificacionDto.materiaId },
+      grado: { id: createPlanificacionDto.gradoId },
+      user: { id: userId }
     });
 
     await this.planifiacionRepository.save(newPlanificacion)
@@ -146,6 +147,7 @@ export class PlanificacionService {
     const planificacion = await this.planifiacionRepository.findOne({
       where: { id },
       relations: ['user'],
+      select: { id: true, url: true, public_id: true, file_format: true, is_active: true, user: { id: true, roles: true } },
     });
     if (!planificacion) throw new NotFoundException(`Planificacion with id ${id} not found`);
     return planificacion;
@@ -161,7 +163,8 @@ export class PlanificacionService {
   async update(id: number,
     updatePlanificacionDto: UpdatePlanificacionDto,
     url?: string,
-    public_id?: string) {
+    public_id?: string,
+    file_format?: string) {
     //controlar que el titulo no este ya en la tabla porque es unique
 
     const planificacion = await this.planifiacionRepository.findOne({
@@ -187,12 +190,9 @@ export class PlanificacionService {
     );
 
     Object.assign(planificacion, dataToUpdate);
-    if (url !== undefined) {
-      planificacion.url = url
-    }
-    if (public_id !== undefined) {
-      planificacion.public_id = public_id
-    }
+    if (url !== undefined) planificacion.url = url
+    if (public_id !== undefined) planificacion.public_id = public_id
+    if (file_format !== undefined) planificacion.file_format = file_format
     await this.planifiacionRepository.save(planificacion)
 
     return planificacion;
@@ -207,7 +207,7 @@ export class PlanificacionService {
       throw new ForbiddenException('No has comprado esta planificacion');
     }
 
-    const url = this.fileService.getSignedDownloadUrl(planificacion.public_id);
+    const url = this.fileService.getSignedDownloadUrl(planificacion.public_id, planificacion.file_format);
     return { url };
   }
 

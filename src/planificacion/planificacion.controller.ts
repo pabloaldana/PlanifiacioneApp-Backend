@@ -27,11 +27,12 @@ export class PlanificacionController {
     @UploadedFile() file: Express.Multer.File,
     @GetUser() user: User
   ) {
-    if (!file) throw new BadRequestException('El archivo PDF es obligatorio')
+    if (!file) throw new BadRequestException('El archivo es obligatorio')
 
     const { url, public_id } = await this.fileService.uploadFile(file)
+    const file_format = file.originalname.split('.').pop() ?? 'pdf'
 
-    return this.planificacionService.create(createPlanificacionDto, url, public_id, user.id);
+    return this.planificacionService.create(createPlanificacionDto, url, public_id, file_format, user.id);
   }
 
   @Get()
@@ -75,7 +76,8 @@ export class PlanificacionController {
     @UploadedFile() file: Express.Multer.File,) {
     if (file) {
       const { url, public_id } = await this.fileService.uploadFile(file)
-      return this.planificacionService.update(id, updatePlanificacionDto, url, public_id);
+      const file_format = file.originalname.split('.').pop() ?? 'pdf'
+      return this.planificacionService.update(id, updatePlanificacionDto, url, public_id, file_format);
     }
     return this.planificacionService.update(id, updatePlanificacionDto);
   }

@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
+import { normalizeString } from 'src/common/utils/normalize-string.util';
 import { GradoService } from 'src/grado/grado.service';
 import { MateriaService } from 'src/materia/materia.service';
 import { User } from 'src/auth/entities/auth.entity';
@@ -16,6 +17,7 @@ export class SeedService {
     private readonly materiaService: MateriaService,
     private readonly gradoService: GradoService,
     private readonly userService: AuthService,
+    private readonly dataSource: DataSource,
     @InjectRepository(Planificacion)
     private readonly planificacionRepository: Repository<Planificacion>,
     @InjectRepository(User)
@@ -31,6 +33,14 @@ export class SeedService {
 
   private async loadSeed() {
     const { MATERIAS_SEED, GRADOS_SEED, USERS_SEED, PLANIFICACIONES_SEED, COMPRAS_SEED } = inicialData;
+
+    // 0. Limpiar todas las tablas respetando FK con CASCADE
+    await this.dataSource.query(`
+      TRUNCATE TABLE
+        favoritos, compras, cart_items, carts, refresh_tokens,
+        planificacion_imagenes, planificaciones, materias, grados, users
+      RESTART IDENTITY CASCADE
+    `);
 
     // 1. Insertar materias, grados y usuarios en paralelo
     const insertPromises: Promise<any>[] = [];
@@ -66,7 +76,7 @@ export class SeedService {
     // 3. Crear planificaciones mapeando materia y grado por nombre/numero
     const planificaciones = await Promise.all(
       PLANIFICACIONES_SEED.map(plan => {
-        const materia = materias.find(m => m.name === plan.materiaName);
+        const materia = materias.find(m => m.name === normalizeString(plan.materiaName));
         const grado = grados.find(g => g.numero === plan.gradoNumero);
         if (!materia || !grado) return Promise.resolve(null);
 

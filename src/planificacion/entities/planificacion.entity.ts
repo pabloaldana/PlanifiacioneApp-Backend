@@ -27,12 +27,12 @@ export class Planificacion {
     })
     price!: number
 
-    //se obtiene cuando se sube la planificacion a cloudinary
     @Column({ type: 'varchar', length: 500 })
     url!: string;
-    //se obtiene cuando se sube la planificacion a cloudinary
     @Column({ type: 'varchar', length: 255 })
     public_id!: string;
+    @Column({ type: 'varchar', length: 10, default: 'pdf' })
+    file_format!: string;
 
     @Column('boolean', { default: true })
     is_active!: boolean;
