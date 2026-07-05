@@ -84,8 +84,8 @@ export class FilesService {
     return this.cloudinary.uploader.destroy(public_id, { resource_type: 'image' });
   }
 
-  getSignedDownloadUrl(public_id: string): string {
-    return this.cloudinary.utils.private_download_url(public_id, 'pdf', {
+  getSignedDownloadUrl(public_id: string, format = 'pdf'): string {
+    return this.cloudinary.utils.private_download_url(public_id, format, {
       resource_type: 'raw',
       type: 'authenticated',
       expires_at: Math.floor(Date.now() / 1000) + 600,
