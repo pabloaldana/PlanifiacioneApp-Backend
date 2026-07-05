@@ -59,7 +59,7 @@ export class PlanificacionController {
     @GetUser() user?: User,
   ) {
     const userId = user?.roles.includes(ValidRoles.superAdmin) ? undefined : user?.id
-    return this.planificacionService.findAll(search, +page, +limit, materiaIds, gradoIds, sortBy, true, userId);
+    return this.planificacionService.findAll(search, +page, +limit, materiaIds, gradoIds, sortBy, true, userId, false);
   }
 
   @Get(':id')

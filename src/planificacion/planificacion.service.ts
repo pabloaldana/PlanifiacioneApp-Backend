@@ -45,7 +45,7 @@ export class PlanificacionService {
     return newPlanificacion;
   }
 
-  async findAll(search?: string, page = 1, limit = 12, materiaIds?: string, gradoIds?: string, sortBy?: string, includeInactive = false, userId?: string) {
+  async findAll(search?: string, page = 1, limit = 12, materiaIds?: string, gradoIds?: string, sortBy?: string, includeInactive = false, userId?: string, includeImages = true) {
     const qb = this.planifiacionRepository
       .createQueryBuilder('planificacion')
       .select([
@@ -59,9 +59,12 @@ export class PlanificacionService {
       ])
       .leftJoinAndSelect('planificacion.materia', 'materia')
       .leftJoinAndSelect('planificacion.grado', 'grado')
-      .leftJoinAndSelect('planificacion.imagenes', 'imagenes')
       .take(limit)
       .skip((page - 1) * limit)
+
+    if (includeImages) {
+      qb.leftJoinAndSelect('planificacion.imagenes', 'imagenes')
+    }
 
     const conditions: string[] = []
     const params: Record<string, any> = {}
@@ -102,11 +105,15 @@ export class PlanificacionService {
     }
 
     if (sortBy === 'price_asc') {
-      qb.orderBy('planificacion.price', 'ASC').addOrderBy('imagenes.orden', 'ASC')
+      qb.orderBy('planificacion.price', 'ASC')
     } else if (sortBy === 'price_desc') {
-      qb.orderBy('planificacion.price', 'DESC').addOrderBy('imagenes.orden', 'ASC')
+      qb.orderBy('planificacion.price', 'DESC')
     } else {
-      qb.orderBy('planificacion.created_at', 'DESC').addOrderBy('imagenes.orden', 'ASC')
+      qb.orderBy('planificacion.created_at', 'DESC')
+    }
+
+    if (includeImages) {
+      qb.addOrderBy('imagenes.orden', 'ASC')
     }
 
     const [data, total] = await qb.getManyAndCount()
