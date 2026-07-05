@@ -52,10 +52,14 @@ export class PlanificacionController {
   findAllAdmin(
     @Query('search') search?: string,
     @Query('page') page = 1,
-    @Query('limit') limit = 1000,
+    @Query('limit') limit = 10,
     @Query('sortBy') sortBy?: string,
+    @Query('materiaIds') materiaIds?: string,
+    @Query('gradoIds') gradoIds?: string,
+    @GetUser() user?: User,
   ) {
-    return this.planificacionService.findAll(search, +page, +limit, undefined, undefined, sortBy, true);
+    const userId = user?.roles.includes(ValidRoles.superAdmin) ? undefined : user?.id
+    return this.planificacionService.findAll(search, +page, +limit, materiaIds, gradoIds, sortBy, true, userId);
   }
 
   @Get(':id')

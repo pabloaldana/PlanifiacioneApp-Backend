@@ -45,7 +45,7 @@ export class PlanificacionService {
     return newPlanificacion;
   }
 
-  async findAll(search?: string, page = 1, limit = 12, materiaIds?: string, gradoIds?: string, sortBy?: string, includeInactive = false) {
+  async findAll(search?: string, page = 1, limit = 12, materiaIds?: string, gradoIds?: string, sortBy?: string, includeInactive = false, userId?: string) {
     const qb = this.planifiacionRepository
       .createQueryBuilder('planificacion')
       .select([
@@ -65,6 +65,12 @@ export class PlanificacionService {
 
     const conditions: string[] = []
     const params: Record<string, any> = {}
+
+    if (userId) {
+      qb.innerJoin('planificacion.user', 'planUser')
+      conditions.push('planUser.id = :userId')
+      params.userId = userId
+    }
 
     if (!includeInactive) {
       conditions.push('planificacion.is_active = true')
