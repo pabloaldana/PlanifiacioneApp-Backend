@@ -10,6 +10,10 @@ export class CreatePlanificacionDto {
     @IsOptional()
     description!: string
 
+    @IsString()
+    @IsOptional()
+    content?: string
+
     @IsNumber()
     @IsOptional()
     price!: number

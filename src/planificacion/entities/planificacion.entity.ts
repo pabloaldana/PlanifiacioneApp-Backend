@@ -22,6 +22,9 @@ export class Planificacion {
     })
     description!: string
 
+    @Column({ type: 'text', nullable: true })
+    content?: string
+
     @Column('int', {
         default: 0
     })

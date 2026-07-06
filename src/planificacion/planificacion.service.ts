@@ -32,6 +32,7 @@ export class PlanificacionService {
     const newPlanificacion = this.planifiacionRepository.create({
       title: createPlanificacionDto.title,
       description: createPlanificacionDto.description,
+      content: createPlanificacionDto.content,
       price: createPlanificacionDto.price,
       url,
       public_id,
@@ -141,6 +142,7 @@ export class PlanificacionService {
         'planificacion.id',
         'planificacion.title',
         'planificacion.description',
+        'planificacion.content',
         'planificacion.price',
         'planificacion.is_active',
         'planificacion.created_at',
