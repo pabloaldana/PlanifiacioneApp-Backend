@@ -1,5 +1,5 @@
-import { join } from "path";
 import { User } from "src/auth/entities/auth.entity";
+import { normalizeString } from "src/common/utils/normalize-string.util";
 import { Compra } from "src/compra/entities/compra.entity";
 import { Grado } from "src/grado/entities/grado.entity";
 import { Materia } from "src/materia/entities/materia.entity";
@@ -22,17 +22,20 @@ export class Planificacion {
     })
     description!: string
 
+    @Column({ type: 'text', nullable: true })
+    content?: string
+
     @Column('int', {
         default: 0
     })
     price!: number
 
-    //se obtiene cuando se sube la planificacion a cloudinary
     @Column({ type: 'varchar', length: 500 })
     url!: string;
-    //se obtiene cuando se sube la planificacion a cloudinary
     @Column({ type: 'varchar', length: 255 })
     public_id!: string;
+    @Column({ type: 'varchar', length: 10, default: 'pdf' })
+    file_format!: string;
 
     @Column('boolean', { default: true })
     is_active!: boolean;
@@ -42,8 +45,6 @@ export class Planificacion {
 
     @UpdateDateColumn()
     updated_at!: Date;
-
-    //! FALTA RELACION CON DOCENTE,MATERIA,GRADO, createat y el update
 
     @ManyToOne(() => Materia, materia => materia.planificaciones, { eager: true })
     @JoinColumn({ name: 'materiaId' })
@@ -67,25 +68,10 @@ export class Planificacion {
     imagenes!: PlanificacionImagen[]
 
 
-    //! aca va para guardar todo en minuscula
     @BeforeInsert()
     @BeforeUpdate()
     normalizeFields() {
-        if (this.title) {
-            this.title = this.title
-                .toLowerCase()
-                .trim()
-                .normalize("NFD")                   // separa letras de acentos
-                .replace(/[\u0300-\u036f]/g, '')    // elimina los acentos
-                .replace(/\s+/g, ' ');
-        }
-        if (this.description) {
-            this.description = this.description
-                .toLowerCase()
-                .trim()
-                .normalize("NFD")                   // separa letras de acentos
-                .replace(/[\u0300-\u036f]/g, '')    // elimina los acentos
-                .replace(/\s+/g, ' ');
-        }
+        if (this.title) this.title = normalizeString(this.title);
+        if (this.description) this.description = normalizeString(this.description);
     }
 }

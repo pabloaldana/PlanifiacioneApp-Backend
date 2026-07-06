@@ -1,10 +1,10 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateGradoDto } from './dto/create-grado.dto';
 import { UpdateGradoDto } from './dto/update-grado.dto';
 import { Grado } from './entities/grado.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { error } from 'console';
+import { handleDBException } from 'src/common/helpers/handle-db-error';
 
 @Injectable()
 export class GradoService {
@@ -76,14 +76,21 @@ export class GradoService {
     return grado;
   }
 
-  private handleDBExceptions(error: any) {
-    if (error.code === '23505') {
-      //!aca me muestra el error en postman
-      throw new InternalServerErrorException('El grado ya existe');
+  async remove(id: number) {
+    const grado = await this.findOne(id);
+    try {
+      await this.gradoRepository.remove(grado);
+    } catch (error: any) {
+      if (error.code === '23503') {
+        throw new BadRequestException('No podés eliminar este grado porque tiene planificaciones asociadas.');
+      }
+      this.logger.error(error);
+      throw new InternalServerErrorException('Error inesperado al eliminar el grado.');
     }
-    //!aca me muestra el error en la consola
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error, check server logs');
+  }
+
+  private handleDBExceptions(error: any) {
+    handleDBException(error, this.logger, 'El grado ya existe');
   }
 
 }

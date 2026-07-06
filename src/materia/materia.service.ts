@@ -1,9 +1,10 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateMateriaDto } from './dto/create-materia.dto';
 import { UpdateMateriaDto } from './dto/update-materia.dto';
 import { Materia } from './entities/materia.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { handleDBException } from 'src/common/helpers/handle-db-error';
 
 @Injectable()
 export class MateriaService {
@@ -59,18 +60,19 @@ export class MateriaService {
   async remove(id: number) {
     const materia = await this.materiaRepository.findOneBy({ id });
     if (!materia) throw new NotFoundException(`Materia with id ${id} not found`);
-    await this.materiaRepository.remove(materia);
-    return { message: `Materia with id ${id} has been removed` };
+    try {
+      await this.materiaRepository.remove(materia);
+      return { message: `Materia with id ${id} has been removed` };
+    } catch (error: any) {
+      if (error.code === '23503') {
+        throw new BadRequestException('No podés eliminar esta materia porque tiene planificaciones asociadas.');
+      }
+      this.logger.error(error);
+      throw new InternalServerErrorException('Error inesperado al eliminar la materia.');
+    }
   }
 
   private handleDBExceptions(error: any) {
-    if (error.code === '23505') {
-      //!aca me muestra el error en postman
-      throw new InternalServerErrorException('El producto ya existe');
-    }
-    //!aca me muestra el error en la consola
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error, check server logs');
-
+    handleDBException(error, this.logger, 'La materia ya existe');
   }
 }

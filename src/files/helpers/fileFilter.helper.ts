@@ -1,26 +1,21 @@
 import { BadRequestException } from "@nestjs/common"
 
-export const fileFilter =  (req:Express.Request,file:Express.Multer.File, callback:Function)=>
-{
-    // console.log('file')
-    if (!file) return callback(new BadRequestException('El archivo es obligatorio'),false)
-    
-    const fileExtension = file.mimetype.split('/')[1]
-    const validExtension = ['pdf','msword','vnd.openxmlformats-officedocument.wordprocessingml.document'] //el ultimo es para .doc
-    
-    if (validExtension.includes(fileExtension)) return callback(null,true)
+type MulterCallback = (error: Error | null, acceptFile: boolean) => void;
 
-    callback( new BadRequestException('Tipo de archivo no permitido. Solo PDF o DOC.'),false)
-}
+const createFileFilter = (validExtensions: string[], errorMessage: string) =>
+  (req: Express.Request, file: Express.Multer.File, callback: MulterCallback) => {
+    if (!file) return callback(new BadRequestException('El archivo es obligatorio'), false);
+    const ext = file.mimetype.split('/')[1];
+    if (validExtensions.includes(ext)) return callback(null, true);
+    callback(new BadRequestException(errorMessage), false);
+  };
 
-export const imageFileFilter =  (req:Express.Request,file:Express.Multer.File, callback:Function)=>
-{
-    if (!file) return callback(new BadRequestException('La imagen es obligatoria'),false)
+export const fileFilter = createFileFilter(
+  ['pdf', 'msword', 'vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  'Tipo de archivo no permitido. Solo PDF o DOC.',
+);
 
-    const fileExtension = file.mimetype.split('/')[1]
-    const validExtension = ['jpg','jpeg','png','webp']
-
-    if (validExtension.includes(fileExtension)) return callback(null,true)
-
-    callback( new BadRequestException('Tipo de archivo no permitido. Solo JPG, PNG o WEBP.'),false)
-}
+export const imageFileFilter = createFileFilter(
+  ['jpg', 'jpeg', 'png', 'webp'],
+  'Tipo de archivo no permitido. Solo JPG, PNG o WEBP.',
+);

@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { normalizeString } from 'src/common/utils/normalize-string.util';
 import { CreatePlanificacionDto } from './dto/create-planificacion.dto';
 import { UpdatePlanificacionDto } from './dto/update-planificacion.dto';
 import { FilesService } from 'src/files/files.service';
@@ -20,7 +21,7 @@ export class PlanificacionService {
   ) { }
 
 
-  async create(createPlanificacionDto: CreatePlanificacionDto, url: string, public_id: string, userId) {
+  async create(createPlanificacionDto: CreatePlanificacionDto, url: string, public_id: string, file_format: string, userId) {
 
     const exists = await this.planifiacionRepository.findOne({
       where: { title: createPlanificacionDto.title }
@@ -31,19 +32,21 @@ export class PlanificacionService {
     const newPlanificacion = this.planifiacionRepository.create({
       title: createPlanificacionDto.title,
       description: createPlanificacionDto.description,
+      content: createPlanificacionDto.content,
       price: createPlanificacionDto.price,
       url,
       public_id,
-      materia: { id: createPlanificacionDto.materiaId },   // RELACIÓN
-      grado: { id: createPlanificacionDto.gradoId },       // RELACIÓN
-      user: { id: userId } //las relaciones se hacen asi
+      file_format,
+      materia: { id: createPlanificacionDto.materiaId },
+      grado: { id: createPlanificacionDto.gradoId },
+      user: { id: userId }
     });
 
     await this.planifiacionRepository.save(newPlanificacion)
     return newPlanificacion;
   }
 
-  async findAll(search?: string) {
+  async findAll(search?: string, page = 1, limit = 12, materiaIds?: string, gradoIds?: string, sortBy?: string, includeInactive = false, userId?: string, includeImages = true) {
     const qb = this.planifiacionRepository
       .createQueryBuilder('planificacion')
       .select([
@@ -57,23 +60,71 @@ export class PlanificacionService {
       ])
       .leftJoinAndSelect('planificacion.materia', 'materia')
       .leftJoinAndSelect('planificacion.grado', 'grado')
-      .leftJoinAndSelect('planificacion.imagenes', 'imagenes')
-      .orderBy('imagenes.orden', 'ASC')
+      .take(limit)
+      .skip((page - 1) * limit)
 
-    if (search) {
-      const normalized = search
-        .toLowerCase()
-        .trim()
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .replace(/\s+/g, ' ')
-      qb.where(
-        'planificacion.title ILIKE :search OR planificacion.description ILIKE :search',
-        { search: `%${normalized}%` },
-      )
+    if (includeImages) {
+      qb.leftJoinAndSelect('planificacion.imagenes', 'imagenes')
     }
 
-    return qb.getMany();
+    const conditions: string[] = []
+    const params: Record<string, any> = {}
+
+    if (userId) {
+      qb.innerJoin('planificacion.user', 'planUser')
+      conditions.push('planUser.id = :userId')
+      params.userId = userId
+    }
+
+    if (!includeInactive) {
+      conditions.push('planificacion.is_active = true')
+    }
+
+    if (search) {
+      conditions.push('(planificacion.title ILIKE :search OR planificacion.description ILIKE :search)')
+      params.search = `%${normalizeString(search)}%`
+    }
+
+    if (materiaIds) {
+      const ids = materiaIds.split(',').map(Number).filter(n => !isNaN(n))
+      if (ids.length) {
+        conditions.push('materia.id IN (:...materiaIds)')
+        params.materiaIds = ids
+      }
+    }
+
+    if (gradoIds) {
+      const ids = gradoIds.split(',').map(Number).filter(n => !isNaN(n))
+      if (ids.length) {
+        conditions.push('grado.id IN (:...gradoIds)')
+        params.gradoIds = ids
+      }
+    }
+
+    if (conditions.length > 0) {
+      qb.where(conditions.join(' AND '), params)
+    }
+
+    if (sortBy === 'price_asc') {
+      qb.orderBy('planificacion.price', 'ASC')
+    } else if (sortBy === 'price_desc') {
+      qb.orderBy('planificacion.price', 'DESC')
+    } else {
+      qb.orderBy('planificacion.created_at', 'DESC')
+    }
+
+    if (includeImages) {
+      qb.addOrderBy('imagenes.orden', 'ASC')
+    }
+
+    const [data, total] = await qb.getManyAndCount()
+
+    return {
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    }
   }
 
   async count(): Promise<number> {
@@ -91,6 +142,7 @@ export class PlanificacionService {
         'planificacion.id',
         'planificacion.title',
         'planificacion.description',
+        'planificacion.content',
         'planificacion.price',
         'planificacion.is_active',
         'planificacion.created_at',
@@ -110,6 +162,7 @@ export class PlanificacionService {
     const planificacion = await this.planifiacionRepository.findOne({
       where: { id },
       relations: ['user'],
+      select: { id: true, url: true, public_id: true, file_format: true, is_active: true, user: { id: true, roles: true } },
     });
     if (!planificacion) throw new NotFoundException(`Planificacion with id ${id} not found`);
     return planificacion;
@@ -125,7 +178,8 @@ export class PlanificacionService {
   async update(id: number,
     updatePlanificacionDto: UpdatePlanificacionDto,
     url?: string,
-    public_id?: string) {
+    public_id?: string,
+    file_format?: string) {
     //controlar que el titulo no este ya en la tabla porque es unique
 
     const planificacion = await this.planifiacionRepository.findOne({
@@ -146,18 +200,14 @@ export class PlanificacionService {
       }
     }
 
-    //todo: Actualizar solo los campos enviados, evita tener que hacer if, ya filta los campos con undefined
     const dataToUpdate = Object.fromEntries(
       Object.entries(updatePlanificacionDto).filter(([_, value]) => value !== undefined)
     );
 
     Object.assign(planificacion, dataToUpdate);
-    if (url !== undefined) {
-      planificacion.url = url
-    }
-    if (public_id !== undefined) {
-      planificacion.public_id = public_id
-    }
+    if (url !== undefined) planificacion.url = url
+    if (public_id !== undefined) planificacion.public_id = public_id
+    if (file_format !== undefined) planificacion.file_format = file_format
     await this.planifiacionRepository.save(planificacion)
 
     return planificacion;
@@ -172,7 +222,7 @@ export class PlanificacionService {
       throw new ForbiddenException('No has comprado esta planificacion');
     }
 
-    const url = this.fileService.getSignedDownloadUrl(planificacion.public_id);
+    const url = this.fileService.getSignedDownloadUrl(planificacion.public_id, planificacion.file_format);
     return { url };
   }
 
