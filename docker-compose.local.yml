@@ -3,32 +3,34 @@ version: '3'
 services:
   db:
     image: postgres:14.3
-    restart: always
+    restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    container_name: planificacionesdb
+    container_name: planificacionesdb-local
     volumes:
-      - ./postgres:/var/lib/postgres/data
+      - postgres_data_local:/var/lib/postgresql/data
 
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    container_name: planificacionesbackend
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+      - backend_modules:/app/node_modules
+    command: sh -c "npm install && npm run start:dev"
+    ports:
+      - "3000:3000"
     environment:
-      PORT: 3000
-      NODE_ENV: production
+      NODE_ENV: development
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
-      FRONTEND_URL: ${FRONTEND_URL}
+      FRONTEND_URL: http://localhost:5173
       CLOUDINARY_NAME: ${CLOUDINARY_NAME}
       CLOUDINARY_KEY: ${CLOUDINARY_KEY}
       CLOUDINARY_SECRET: ${CLOUDINARY_SECRET}
@@ -45,14 +47,18 @@ services:
       - db
 
   frontend:
-    build:
-      context: ../planificaciones-frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_BASE_URL: /api
-    restart: always
-    container_name: planificacionesfrontend
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ../planificaciones-frontend:/app
+      - frontend_modules:/app/node_modules
+    command: sh -c "npm install && npm run dev -- --host"
     ports:
-      - "80:80"
+      - "5173:5173"
     depends_on:
       - backend
+
+volumes:
+  postgres_data_local:
+  backend_modules:
+  frontend_modules:
