@@ -9,6 +9,7 @@ import { User } from 'src/auth/entities/auth.entity';
 import { Planificacion } from 'src/planificacion/entities/planificacion.entity';
 import { Compra, PaymentStatus } from 'src/compra/entities/compra.entity';
 import { inicialData } from './data/seed-data';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SeedService {
@@ -29,6 +30,71 @@ export class SeedService {
   async runSeed() {
     await this.loadSeed();
     return { message: 'Seed executed' };
+  }
+
+  async runInit() {
+    const created: string[] = [];
+
+    // Materias — solo inserta las que no existen
+    for (const materia of inicialData.MATERIAS_SEED) {
+      const existing = await this.materiaService.findAll();
+      const normalizedName = normalizeString(materia.name);
+      const exists = existing.some((m: any) => m.name === normalizedName);
+      if (!exists) {
+        await this.materiaService.create(materia);
+        created.push(`materia: ${materia.name}`);
+      }
+    }
+
+    // Grados — solo inserta los que no existen
+    for (const grado of inicialData.GRADOS_SEED) {
+      const existing = await this.gradoService.findAll();
+      const exists = existing.some((g: any) => g.numero === grado.numero);
+      if (!exists) {
+        await this.gradoService.create(grado);
+        created.push(`grado: ${grado.name}`);
+      }
+    }
+
+    // Superadmin — desde env vars, solo si no existe ningún super-admin
+    const superAdminEmail = process.env.SUPERADMIN_EMAIL;
+    const superAdminPassword = process.env.SUPERADMIN_PASSWORD;
+    if (superAdminEmail && superAdminPassword) {
+      const existing = await this.userRepository.findOne({ where: { email: superAdminEmail } });
+      if (!existing) {
+        const user = this.userRepository.create({
+          email: superAdminEmail,
+          password: bcrypt.hashSync(superAdminPassword, 10),
+          name: 'Super',
+          lastname: 'Admin',
+          roles: ['super-admin'],
+          isActive: true,
+        });
+        await this.userRepository.save(user);
+        created.push(`superadmin: ${superAdminEmail}`);
+      }
+    }
+
+    // Admin — desde env vars, solo si no existe
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (adminEmail && adminPassword) {
+      const existing = await this.userRepository.findOne({ where: { email: adminEmail } });
+      if (!existing) {
+        const user = this.userRepository.create({
+          email: adminEmail,
+          password: bcrypt.hashSync(adminPassword, 10),
+          name: 'Admin',
+          lastname: 'System',
+          roles: ['admin'],
+          isActive: true,
+        });
+        await this.userRepository.save(user);
+        created.push(`admin: ${adminEmail}`);
+      }
+    }
+
+    return { message: 'Init executed', created };
   }
 
   private async loadSeed() {

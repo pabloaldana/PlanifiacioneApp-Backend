@@ -35,7 +35,7 @@ import { FavoritoModule } from './favorito/favorito.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: process.env.DB_SYNCHRONIZE === 'true',
     }),
 
     MateriaModule, GradoModule, PlanificacionModule, PlanificacionImagenModule, FilesModule, AuthModule, CompraModule, SeedModule, PaymentsModule, CartModule, DashboardModule, FavoritoModule,],
