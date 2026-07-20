@@ -236,8 +236,20 @@ export class PlanificacionService {
     return planificacion;
   }
 
-  async remove(id: number) {
-    const planificacion = await this.findOneInternal(id);
+  async reactivate(id: number, user: User) {
+    const planificacion = await this.assertCanManage(id, user);
+
+    if (planificacion.is_active) {
+      return { message: 'La planificación ya está activa', is_active: true };
+    }
+
+    planificacion.is_active = true;
+    await this.planifiacionRepository.save(planificacion);
+    return { message: 'Planificación reactivada', is_active: true };
+  }
+
+  async remove(id: number, user: User) {
+    const planificacion = await this.assertCanManage(id, user);
 
     const tieneCompras = await this.compraService.hasPurchases(id);
 
@@ -245,6 +257,19 @@ export class PlanificacionService {
       planificacion.is_active = false;
       await this.planifiacionRepository.save(planificacion);
       return { message: 'Planificación con compras asociadas — se desactivó en lugar de eliminarse', is_active: false };
+    }
+
+    const conImagenes = await this.planifiacionRepository.findOne({
+      where: { id },
+      relations: ['imagenes'],
+    });
+
+    await this.fileService.deleteFile(planificacion.public_id);
+
+    if (conImagenes?.imagenes?.length) {
+      await Promise.all(
+        conImagenes.imagenes.map(img => this.fileService.deleteImage(img.public_id))
+      );
     }
 
     await this.planifiacionRepository.remove(planificacion);

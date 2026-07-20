@@ -86,10 +86,16 @@ export class PlanificacionController {
     return this.planificacionService.update(id, updatePlanificacionDto);
   }
 
+  @Patch(':id/reactivar')
+  @Auth(ValidRoles.admin)
+  reactivate(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
+    return this.planificacionService.reactivate(id, user);
+  }
+
   @Delete(':id')
   @Auth(ValidRoles.admin)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.planificacionService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
+    return this.planificacionService.remove(id, user);
   }
 
   @Get(':id/download')
